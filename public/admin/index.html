@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Admin dashboard | HM ELECTRICAL</title><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="admin-upgrade.css"><script defer src="../data.js"></script><script defer src="admin.js"></script>
+</head>
+<body>
+<header><a class="brand" href="/">HM <span>ELECTRICAL<small>B2B ADMINISTRATION</small></span></a><a href="/">Business website ↗</a></header>
+<main>
+<p id="message" role="status" aria-live="polite"></p>
+<form id="login"><div><p class="eyebrow">SECURE WORKSPACE</p><h1>Admin sign in</h1></div><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button>Sign in securely</button><p>Sign-in uses the configured Supabase account and admin allowlist. Sessions expire after one hour. Open this page through Netlify or Netlify Dev; a file or static preview cannot access the admin API.</p></form>
+<section id="workspace" hidden>
+<div class="workspace-head"><div><p class="eyebrow">HM ELECTRICAL · OPERATIONS</p><h1>Business dashboard</h1><p id="accessLabel">Authenticated administrator</p></div><div class="workspace-actions"><button id="desktopNotifications" class="button-secondary" type="button">Enable desktop notifications</button><button id="notificationBell" type="button" aria-expanded="false" aria-controls="notificationsPanel"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>Notifications <span id="notificationCount" class="notification-count" aria-label="0 unread notifications">0</span></button><button id="logout" class="button-secondary" type="button">Sign out</button></div></div>
+<section id="notificationsPanel" class="notification-panel" aria-label="Notifications" hidden>
+<div class="notification-panel-head"><div><h2>Notifications</h2><p id="notificationMessage" role="status" aria-live="polite">New enquiries and bookings refresh while you are signed in.</p></div><button id="markNotificationsRead" class="button-secondary" type="button">Mark all read</button></div>
+<ul id="notificationList" class="notification-list"></ul>
+</section>
+<nav class="tabs" aria-label="Admin sections"><button type="button" data-view="overview" aria-current="page">Overview</button><button type="button" data-view="enquiries">Customer enquiries</button><button type="button" data-view="catalogue">Product catalogue</button><button type="button" data-view="quotations">Quotations</button><button type="button" data-view="inventory">Inventory</button><button type="button" data-view="serviceBookings">Service bookings</button><button type="button" data-view="photos">Product photos</button></nav>
+<section id="overviewView" class="view">
+<div class="section-title"><div><h2>Overview</h2><p>Live totals from catalogue data and the configured enquiry database.</p></div><button id="refreshOverview" type="button" class="button-secondary">Refresh</button></div>
+<div class="metric-grid">
+<article class="metric"><span>Catalogue products</span><strong id="metricProducts">—</strong><small>Current product catalogue</small></article>
+<article class="metric"><span>Customer enquiries</span><strong id="metricEnquiries">—</strong><small>Stored enquiry records</small></article>
+<article class="metric"><span>Draft quotations</span><strong id="metricQuotations">—</strong><small>Saved draft quotations</small></article>
+<article class="metric"><span>Products with stock</span><strong id="metricInventory">—</strong><small>Godown products with recorded on-hand balances</small></article>
+<article class="metric setup"><span>Orders</span><strong>Setup required</strong><small>No order management backend configured</small></article>
+<article class="metric setup"><span>Sales</span><strong>Setup required</strong><small>No sales/payment records configured</small></article>
+</div>
+<article class="panel"><div class="section-title"><div><h3>Enquiry status</h3><p>Counts returned from the authenticated enquiry store.</p></div></div><div id="statusSummary" class="status-grid"><p>Sign in to load enquiry totals.</p></div></article>
+<article class="notice"><strong>Quotation and inventory setup</strong><p>Quotation drafts, revision history, PDF creation, and stock movement screens require their additive Supabase migrations before database operations work. Orders, supplier purchasing, payments, sales reports, uploads, and granular staff roles are not implemented. Email/Resend remains disabled.</p></article>
+</section>
+<section id="enquiriesView" class="view" hidden>
+<div class="section-title"><div><h2>Customer enquiries</h2><p>Manage and export requests already stored by the configured enquiry service.</p></div><button id="refresh" type="button" class="button-secondary">Refresh</button></div>
+<form id="filters" class="filters"><label>Search<input id="query" type="search" maxlength="100" placeholder="Name, mobile, material, location…"></label><label>Status<select id="status"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quotation Sent</option><option>Confirmed</option><option>Closed</option></select></label><label>From (UTC)<input id="from" type="date"></label><label>Through (UTC)<input id="to" type="date"></label><button>Apply filters</button></form>
+<div class="toolbar"><span>Exports include matching enquiries, up to 9,999.</span><button id="csv" type="button">Export CSV</button><button id="excel" type="button" class="button-secondary">Export Excel</button></div>
+<div class="table-wrap"><table><thead><tr><th>Date / reference</th><th>Customer</th><th>Materials / quantity</th><th>Delivery / requirement</th><th>Status</th><th>Email</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="toolbar pager"><button id="prev" type="button" class="button-secondary">← Previous</button><span id="page"></span><button id="next" type="button" class="button-secondary">Next →</button></div>
+</section>
+<section id="catalogueView" class="view" hidden>
+<div class="section-title"><div><h2>Product catalogue metadata</h2><p>Existing catalogue IDs and product details stay unchanged. Unknown specifications and prices remain blank.</p></div><button id="refreshCatalogue" type="button" class="button-secondary">Refresh</button></div>
+<article class="notice"><strong>Admin-only commercial data</strong><p>Purchase prices, wholesale rates, GST/HSN and photo-rights flags are never exposed to the public catalogue by this screen. Blank CSV cells do not erase saved values. Do not mark a price or photo as verified without an official source and rights confirmation.</p></article>
+<div class="catalogue-import panel">
+<div class="section-title"><div><h3>CSV import / export</h3><p>Export the current material products, edit verified fields, preview validation, then save. XLSX import/export is not configured.</p></div><button id="exportCatalogueCsv" type="button">Download CSV</button></div>
+<div class="catalogue-import-actions"><label>Choose edited CSV<input id="catalogueCsvFile" type="file" accept=".csv,text/csv"></label><button id="previewCatalogueCsv" class="button-secondary" type="button">Preview import</button><button id="saveCatalogueCsv" type="button" disabled>Save valid rows</button></div>
+<p id="catalogueImportMessage" class="muted" role="status" aria-live="polite">No file selected. Preview does not save data.</p><ul id="catalogueImportErrors" class="catalogue-import-errors"></ul>
+</div>
+<div class="catalogue-filter"><label>Search products<input id="catalogueQuery" type="search" maxlength="100" placeholder="Product code, name, category, brand, HSN…"></label><span id="catalogueCount" class="muted" role="status"></span></div>
+<div class="table-wrap"><table class="catalogue-table"><thead><tr><th>Product code</th><th>Product / specification</th><th>Brand</th><th>Manufacturer SKU</th><th>HSN</th><th>GST %</th><th>MRP (₹)</th><th>Purchase cost (₹)</th><th>Retail (₹)</th><th>Wholesale (₹)</th><th>MOQ</th><th>Listing status</th><th>Public price mode</th></tr></thead><tbody id="catalogueRows"></tbody></table></div>
+<div class="toolbar pager"><button id="cataloguePrev" type="button" class="button-secondary">← Previous</button><span id="cataloguePage"></span><button id="catalogueNext" type="button" class="button-secondary">Next →</button></div>
+</section>
+<section id="quotationsView" class="view" hidden>
+<div class="section-title"><div><h2>Quotations</h2><p>Create a draft from scratch or convert a stored enquiry. Quotes do not reserve stock or confirm orders.</p></div><div><button id="newQuotation" type="button" class="button-secondary">New quotation</button> <button id="refreshQuotations" type="button" class="button-secondary">Refresh</button></div></div>
+<article class="notice"><strong>Rates and GST need review</strong><p>Product prices are entered by the admin; no MRP or selling rate is assumed. GST is only calculated from verified product tax metadata or a custom service source/date you provide. Freight/other-charge GST treatment, legal terms and tax configuration must be reviewed before issuing. No email or payment is sent or collected.</p></article>
+<div class="catalogue-filter"><label>Convert existing enquiry<select id="quotationEnquiry"><option value="">Create without an enquiry</option></select></label><span id="quotationMessage" class="muted" role="status" aria-live="polite"></span></div>
+<article class="panel"><div class="section-title"><div><h3 id="quotationFormTitle">New quotation draft</h3><p id="quotationRevisionNote">Use a verified catalogue item or a clearly identified custom service line.</p></div></div>
+<div id="quotationHistory" class="quotation-history" hidden><strong>Saved revisions</strong><ul id="quotationHistoryRows"></ul></div>
+<form id="quotationForm">
+<input id="quotationId" type="hidden"><input id="quotationSourceEnquiry" type="hidden"><input id="quotationRevisionMode" type="hidden" value="false">
+<div class="quotation-fields">
+<label>Customer name<input id="quotationCustomerName" maxlength="120" required></label>
+<label>Company name<input id="quotationCompanyName" maxlength="160"></label>
+<label>Mobile<input id="quotationMobile" type="tel" inputmode="tel" maxlength="20"></label>
+<label>Email (optional)<input id="quotationEmail" type="email" maxlength="254"></label>
+<label>Customer GSTIN (optional)<input id="quotationCustomerGstin" maxlength="15" autocapitalize="characters"></label>
+<label>Place of supply<input id="quotationPlaceOfSupply" maxlength="100" placeholder="Enter verified state / place for this quote"></label>
+<label>GST calculation<select id="quotationTaxMode"><option value="none">No GST calculation</option><option value="intra_state">Intra-state: CGST + SGST</option><option value="inter_state">Inter-state: IGST</option></select></label>
+<label>Valid until<input id="quotationValidUntil" type="date"></label>
+<label class="quotation-wide">Billing address<textarea id="quotationBillingAddress" maxlength="800" rows="2"></textarea></label>
+<label class="quotation-wide">Shipping / site address<textarea id="quotationShippingAddress" maxlength="800" rows="2"></textarea></label>
+<label>Payment terms<input id="quotationPaymentTerms" maxlength="500"></label>
+<label>Delivery terms<input id="quotationDeliveryTerms" maxlength="500"></label>
+<label>Warranty terms<input id="quotationWarrantyTerms" maxlength="500"></label>
+<label>Freight (INR, GST treatment must be reviewed)<input id="quotationFreight" type="number" min="0" max="999999999999" step="0.01" value="0"></label>
+<label>Other charges (INR, GST treatment must be reviewed)<input id="quotationOtherCharges" type="number" min="0" max="999999999999" step="0.01" value="0"></label>
+<label class="quotation-wide">Internal / customer quote notes<textarea id="quotationNotes" maxlength="2000" rows="3"></textarea></label>
+</div>
+<datalist id="quotationProductOptions"></datalist>
+<div class="section-title quotation-lines-head"><div><h3>Quotation lines</h3><p>Catalogue prices and tax rates are never auto-filled unless the GST rate has a verified source.</p></div><div><button id="addQuotationProduct" type="button" class="button-secondary">Add product</button> <button id="addQuotationService" type="button" class="button-secondary">Add custom service</button></div></div>
+<div class="table-wrap"><table class="quotation-lines-table"><thead><tr><th>Product / custom service</th><th>Qty</th><th>Unit</th><th>Rate (INR)</th><th>Discount (INR)</th><th>GST % / source</th><th>Line total (INR)</th><th></th></tr></thead><tbody id="quotationLines"></tbody></table></div>
+<div class="quotation-totals" id="quotationTotals" aria-live="polite"></div>
+<div class="quotation-form-actions"><button id="saveQuotation" type="submit">Save draft</button><button id="cancelQuotation" class="button-secondary" type="button">Clear form</button></div>
+</form></article>
+<article class="panel"><div class="section-title"><div><h3>Saved quotations</h3><p>Status changes are manual records only; they do not send a customer message or create an order.</p></div></div>
+<div class="table-wrap"><table class="quotation-list-table"><thead><tr><th>Quotation / revision</th><th>Customer</th><th>Date</th><th>Status</th><th>Total</th><th>Actions</th></tr></thead><tbody id="quotationRows"></tbody></table></div>
+<div class="toolbar pager"><button id="quotationPrev" type="button" class="button-secondary">← Previous</button><span id="quotationPage"></span><button id="quotationNext" type="button" class="button-secondary">Next →</button></div>
+</article>
+</section>
+<section id="inventoryView" class="view" hidden>
+<div class="section-title"><div><h2>Central godown inventory</h2><p>Stock changes are recorded in an auditable ledger. Quotes do not reserve or deduct stock.</p></div><button id="refreshInventory" type="button" class="button-secondary">Refresh</button></div>
+<article class="notice"><strong>Safe stock controls</strong><p>Only confirmed purchase/return receipts add stock; dispatch, installation issue, supplier return, damage and adjustments are recorded as separate movements. The server rejects overselling and duplicate requests. Opening stock can be entered once per product; later corrections must use adjustment.</p></article>
+<article class="panel"><div class="section-title"><div><h3>Record stock movement</h3><p>Enter the real source reference. This does not create an order, purchase, or customer record.</p></div></div>
+<form id="inventoryMovementForm" class="inventory-form">
+<label>Catalogue product<select id="inventoryProduct" required><option value="">Select product</option></select></label>
+<label>Movement type<select id="inventoryMovementType" required><option value="opening_stock">Opening stock</option><option value="goods_receipt">Goods receipt</option><option value="customer_return">Customer return</option><option value="customer_dispatch">Customer dispatch</option><option value="installation_issue">Installation issue</option><option value="supplier_return">Supplier return</option><option value="damage">Damage / write-off</option><option value="adjustment">Stock adjustment (+/-)</option></select></label>
+<label>Quantity<input id="inventoryQuantity" type="number" step="0.001" min="-1000000000" max="1000000000" required></label>
+<label>Reference type<select id="inventoryReferenceType" required><option value="opening">Opening</option><option value="purchase">Purchase</option><option value="customer-return">Customer return</option><option value="order">Order</option><option value="installation">Installation</option><option value="supplier-return">Supplier return</option><option value="damage">Damage</option><option value="adjustment">Adjustment</option></select></label>
+<label>Reference number<input id="inventoryReferenceId" maxlength="120" required></label>
+<label>Note (optional)<input id="inventoryNote" maxlength="500"></label>
+<button id="saveInventoryMovement" type="submit">Record movement</button>
+</form><p id="inventoryMessage" class="muted" role="status" aria-live="polite"></p>
+</article>
+<div class="catalogue-filter"><label>Search stock<input id="inventoryQuery" type="search" maxlength="100" placeholder="Product code, name, category…"></label><span id="inventoryCount" class="muted" role="status"></span></div>
+<div class="table-wrap"><table class="inventory-table"><thead><tr><th>Product code</th><th>Product / specification</th><th>Category</th><th>On hand</th><th>Reserved</th><th>Available</th><th>Updated</th></tr></thead><tbody id="inventoryRows"></tbody></table></div>
+<div class="toolbar pager"><button id="inventoryPrev" type="button" class="button-secondary">← Previous</button><span id="inventoryPage"></span><button id="inventoryNext" type="button" class="button-secondary">Next →</button></div>
+<article class="panel"><div class="section-title"><div><h3>Recent stock movements</h3><p>Most recent 50 movements per page; history is append-only.</p></div></div><p id="inventoryHistoryMessage" class="muted" role="status" aria-live="polite"></p><div class="table-wrap"><table><thead><tr><th>Date / product</th><th>Movement</th><th>Quantity</th><th>Reference</th><th>Note</th></tr></thead><tbody id="inventoryHistoryRows"></tbody></table></div><div class="toolbar pager"><button id="inventoryHistoryPrev" type="button" class="button-secondary">← Previous</button><span id="inventoryHistoryPage"></span><button id="inventoryHistoryNext" type="button" class="button-secondary">Next →</button></div></article>
+</section>
+<section id="photosView" class="view" hidden>
+<div class="section-title"><div><h2>Product photo audit</h2><p>Exact product photos are shown only with a verified product match and permitted image rights.</p></div><button id="photoReport" type="button">Download missing-photo CSV</button></div>
+<div class="photo-summary"><article class="metric"><span>Catalogue items audited</span><strong id="photoProducts">—</strong></article><article class="metric"><span>Approved product photos</span><strong>0 found</strong><small>No exact product photo and usage-right record in the current catalogue assets.</small></article><article class="metric"><span>Image paths checked</span><strong id="photoAssets">Checking…</strong><small>Current catalogue paths and mapped placeholders.</small></article></div>
+<article class="notice"><strong>Photo uploads and product mapping need secure backend setup.</strong><p>This dashboard can audit and export the current catalogue, but cannot save image uploads or mappings. Project and team photographs are excluded; they are not product photos. Add private media storage, file validation, access policies, and an approval record before enabling uploads.</p></article>
+<div class="photo-filters"><label>Search products<input id="photoQuery" type="search" maxlength="100" placeholder="Product, ID, category…"></label><label>Category<select id="photoCategory"><option value="">All categories</option></select></label><label>Image path<select id="photoStatus"><option value="">All image paths</option><option value="broken">Broken source or placeholder path</option></select></label></div>
+<p id="photoCount" class="muted" role="status"></p><div id="photoList" class="photo-list"></div><div class="toolbar pager"><button id="photoPrev" type="button" class="button-secondary">← Previous</button><span id="photoPage"></span><button id="photoNext" type="button" class="button-secondary">Next →</button></div>
+</section>
+<section id="serviceBookingsView" class="view" hidden>
+<div class="section-title"><div><h2>Service bookings</h2><p>Customer service requests are not confirmed appointments. Contact the customer and confirm details before accepting work.</p></div><button id="refreshServiceBookings" type="button" class="button-secondary">Refresh</button></div>
+<nav class="service-admin-tabs" aria-label="Service booking administration"><button type="button" data-service-panel="bookings" aria-current="page">Bookings</button><button type="button" data-service-panel="technicians">Technician management</button></nav>
+<section id="serviceBookingsPanel">
+<div class="service-booking-filters"><label>Booking status<select id="serviceBookingFilter"><option value="">All bookings</option><option>New</option><option>Assigned</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></label><span>Photos are private and available only through short-lived admin links.</span></div>
+<p id="serviceBookingsMessage" class="muted" role="status" aria-live="polite"></p><div id="serviceBookingList" class="service-booking-list"></div>
+<div class="toolbar pager"><button id="serviceBookingPrev" type="button" class="button-secondary">← Previous</button><span id="serviceBookingPage"></span><button id="serviceBookingNext" type="button" class="button-secondary">Next →</button></div>
+</section>
+<section id="techniciansPanel" hidden>
+<article class="panel"><div class="section-title"><div><h3>Add a technician</h3><p>Enter a real team member. The roster accepts a maximum of 10 records; no sample technicians are preloaded.</p></div></div><form id="technicianForm" class="technician-form"><label>Name<input id="technicianName" maxlength="120" required></label><label>Mobile<input id="technicianMobile" type="tel" inputmode="tel" maxlength="20" required></label><label>Trade<input id="technicianTrade" maxlength="100" required placeholder="Electrical, plumbing, maintenance…"></label><button type="submit">Add technician</button></form></article>
+<div class="section-title"><div><h3>Technician roster</h3><p>Availability and active status control who can be newly assigned.</p></div><button id="refreshTechnicians" type="button" class="button-secondary">Refresh roster</button></div>
+<p id="techniciansMessage" class="muted" role="status" aria-live="polite"></p><div id="technicianList" class="technician-list"></div>
+</section>
+</section>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "hm-electrical-final",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run build && netlify dev",
+    "dev:test": "node scripts/start-test-env.cjs",
+    "dev:check": "node scripts/check-dev-env.cjs",
+    "build": "node scripts/check.cjs && node scripts/build-site.cjs",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.16",
+    "netlify-cli": "^27.15.0"
+  },
+  "dependencies": {
+    "pdfkit": "^0.20.2"
+  }
+}

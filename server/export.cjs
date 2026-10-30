@@ -1,0 +1,6 @@
+const fields=['Reference','Name','Company','Mobile','Email','Materials / quantities','Delivery location','Required date','Date (UTC)','Status','Type','Requirements','Email notification'];
+const values=r=>[r.id,r.name,r.company_name||'',r.phone,r.email,r.items.map(i=>`${i.id} | ${i.name} ${i.size} | ${i.qty} ${i.unit}`).join('\n'),r.location,r.required_date||'',r.created_at,r.status,r.type,r.details,r.email_status];
+const xml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+function csv(rows){return '\ufeff'+[fields,...rows.map(values)].map(row=>row.map(v=>'"'+(/^[\s]*[=+\-@]/.test(String(v))?"'":'')+String(v??'').replaceAll('"','""')+'"').join(',')).join('\r\n');}
+function excel(rows){return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Enquiries"><Table>'+[fields,...rows.map(values)].map(row=>'<Row>'+row.map(v=>'<Cell><Data ss:Type="String">'+xml(v)+'</Data></Cell>').join('')+'</Row>').join('')+'</Table></Worksheet></Workbook>';}
+module.exports={csv,excel};

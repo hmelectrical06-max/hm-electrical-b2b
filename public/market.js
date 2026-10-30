@@ -1,0 +1,1 @@
+window.HM_MARKET = [];

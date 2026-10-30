@@ -1,0 +1,9 @@
+:root{--gold:#f28a2e;--blue:#193a5d}
+.tabs button[aria-current=page],.service-admin-tabs button[aria-current=page]{border-bottom-color:#f28a2e}
+button:not(.button-secondary){background:#193a5d}
+button:not(.button-secondary):hover{background:#f28a2e;color:#132b45}
+.tabs button,.service-admin-tabs button{background:transparent}
+.tabs button[aria-current=page],.service-admin-tabs button[aria-current=page]{color:#142d42}
+.notice{border-left:4px solid #f28a2e}
+#login{box-shadow:0 16px 42px #1a36501a}
+@media(max-width:640px){.workspace-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.workspace-actions button{min-width:0}.workspace-actions #desktopNotifications{grid-column:1/-1}}

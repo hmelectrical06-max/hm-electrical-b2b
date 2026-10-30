@@ -1,0 +1,1 @@
+document.querySelectorAll('[data-rate]').forEach(cell=>{cell.textContent='MRP on request';});
