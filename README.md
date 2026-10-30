@@ -1,5 +1,7 @@
 # HM ELECTRICAL — final website project
 
+Original GitHub repository description: HM ELECTRICAL ONLINE B2B METRIAL STORE.
+
 Prepared 29 October 2026. Local tested release candidate; unpublished. Default build is staging/noindex. No real customer data or credentials are included.
 
 ## What is included
