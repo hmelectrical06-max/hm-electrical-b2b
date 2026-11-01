@@ -25,4 +25,5 @@ function draft(rfq,supplier,channel){if(!['email','whatsapp','other'].includes(c
  const link=message.length>1800?null:channel==='email'?'mailto:'+encodeURIComponent(address)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message):channel==='whatsapp'?'https://wa.me/'+address+'?text='+encodeURIComponent(message):null;
  return {subject,message,address,channel,link,longMessage:message.length>1800};
 }
-module.exports={statuses,supplierFields,supplierSelect,uuid,date,supplier,response,safeItems,draft};
+function chooseItems(items,ids){const all=safeItems(items);if(ids===undefined)return all;if(!Array.isArray(ids)||ids.length>1000||ids.some(id=>typeof id!=='string'||!all.some(p=>p.id===id)))c.fail(400,'Choose material lines from the selected customer enquiry.');const selected=new Set(ids);return all.filter(p=>selected.has(p.id));}
+module.exports={statuses,supplierFields,supplierSelect,uuid,date,supplier,response,safeItems,chooseItems,draft};

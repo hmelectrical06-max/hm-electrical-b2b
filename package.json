@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.16",
+    "jsdom": "27.0.1",
     "netlify-cli": "^27.15.0"
   },
   "dependencies": {

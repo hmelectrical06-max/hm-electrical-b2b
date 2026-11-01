@@ -15,6 +15,7 @@ test('WhatsApp drafts require a confirmed number and long RFQs preserve the comp
  assert.throws(()=>s.draft(rfq(),supplier(),'whatsapp'));const d=s.draft(rfq(),{...supplier(),whatsapp:'919999999999',whatsapp_confirmed:true},'whatsapp');assert.ok(d.link.startsWith('https://wa.me/919999999999?text='));
  const long=s.draft({...rfq(),supplier_note:'Long notes '.repeat(500)},supplier(),'email');assert.equal(long.link,null);assert.equal(long.longMessage,true);assert.ok(long.message.includes('Long notes '.repeat(500)));assert.ok(!s.draft(rfq(),supplier(),'other').address);
 });
+test('supplier RFQs share only the enquiry lines chosen by the administrator',()=>{const items=[{id:'MAT-1',name:'Cable',size:'1',unit:'Mtr',qty:2},{id:'MAT-2',name:'Pipe',size:'2',unit:'Mtr',qty:3}];assert.deepEqual(s.chooseItems(items,['MAT-2']).map(p=>p.id),['MAT-2']);assert.equal(s.chooseItems(items,[]).length,0);assert.throws(()=>s.chooseItems(items,['FORGED']));});
 test('supplier totals preserve blank versus zero and validate internal status records',()=>{
  assert.equal(s.response({status:'Quoted',quoted_total:''}).quoted_total,null);assert.equal(s.response({status:'Quoted',quoted_total:0}).quoted_total,0);assert.equal(s.response({status:'Quoted',quoted_total:12.345}).quoted_total,12.35);for(const patch of [{quoted_total:-1},{quoted_total:'Infinity'},{status:'Automatically paid'},{follow_up_date:'2026-02-31'}])assert.throws(()=>s.response({status:'Quoted',...patch}));
 });
