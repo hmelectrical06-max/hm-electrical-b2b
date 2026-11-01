@@ -13,8 +13,9 @@ function emailErrorCode(status){
 
 function validateSender(value){
   if(typeof value!=='string')throw new Error('EMAIL_FROM_INVALID');
-  const sender=value.match(/^(?:[^<>]*<)?\s*([^\s<>@]+)@([^\s<>@]+)\s*>?$/);
-  if(!sender||!sender[2].includes('.'))throw new Error('EMAIL_FROM_INVALID');
+  const sender=value.trim().match(/^(?:[^<>]+<([^\s<>@]+@[^\s<>@]+)>|([^\s<>@]+@[^\s<>@]+))$/);
+  const address=sender&&(sender[1]||sender[2]);
+  if(!address||!address.split('@')[1].includes('.'))throw new Error('EMAIL_FROM_INVALID');
   return value;
 }
 

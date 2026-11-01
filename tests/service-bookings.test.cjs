@@ -414,6 +414,10 @@ test('classifies Resend failures safely and validates EMAIL_FROM syntax',()=>{
   assert.equal(emailErrorCode(429),'RESEND_RATE_LIMITED');
   assert.equal(emailErrorCode(503),'RESEND_TEMPORARILY_UNAVAILABLE');
   assert.equal(validateSender('HM ELECTRICAL <notify@example.com>'),'HM ELECTRICAL <notify@example.com>');
+  assert.equal(validateSender('notify@example.com'),'notify@example.com');
+  assert.throws(()=>validateSender('HM ELECTRICAL<notify@example.com'),{message:'EMAIL_FROM_INVALID'});
+  assert.throws(()=>validateSender('notify@example.com>'),{message:'EMAIL_FROM_INVALID'});
+  assert.throws(()=>validateSender('HM ELECTRICAL <notify@example.com>\r\nBcc: other@example.com'),{message:'EMAIL_FROM_INVALID'});
   assert.throws(()=>validateSender('not-an-email'),{message:'EMAIL_FROM_INVALID'});
 });
 
