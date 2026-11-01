@@ -51,6 +51,9 @@ function validateTestEnvironment(values) {
   }
 
   const projectRef = values.HM_TEST_SUPABASE_PROJECT_REF.trim();
+  if (projectRef === 'qftvchsrqaevkfkhbnrj') {
+    return { error: 'The HM ELECTRICAL production project cannot be used for TEST runs. Use the separate HM ELECTRICAL TEST project.' };
+  }
   if (!/^[a-z0-9-]{1,63}$/.test(projectRef)) {
     return { error: 'HM_TEST_SUPABASE_PROJECT_REF must be the TEST project reference.' };
   }
@@ -98,6 +101,9 @@ function buildTestSite(root, values) {
   const buildRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hm-electrical-test-'));
   try {
     fs.cpSync(path.join(root, 'public'), path.join(buildRoot, 'public'), { recursive: true });
+    fs.copyFileSync(path.join(root, 'netlify.toml'), path.join(buildRoot, 'netlify.toml'));
+    fs.mkdirSync(path.join(buildRoot, 'server'), { recursive: true });
+    fs.copyFileSync(path.join(root, 'server', 'catalogue.json'), path.join(buildRoot, 'server', 'catalogue.json'));
     const build = spawnSync(process.execPath, [path.join(root, 'scripts', 'build-site.cjs')], {
       cwd: buildRoot,
       env: createNetlifyEnvironment(values),
@@ -168,7 +174,7 @@ function run() {
     '--functions',
     path.join(root, 'netlify', 'functions')
   ], {
-    cwd: root,
+    cwd: testBuildRoot,
     env: childEnv,
     stdio: 'inherit'
   });

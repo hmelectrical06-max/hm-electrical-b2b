@@ -179,6 +179,67 @@ test('saves valid bookings, emails the office through a mock, and uploads option
   }
 });
 
+test('does not save after a photo upload failure and removes an uploaded photo when booking persistence fails',async()=>{
+  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN'];
+  const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+  const originalFetch=global.fetch,requests=[];
+  let failUpload=true,failInsert=false;
+  Object.assign(process.env,{
+    SUPABASE_URL:'https://service-booking-cleanup-test.invalid',
+    SUPABASE_SERVICE_ROLE_KEY:'test-only-server-key',
+    RATE_LIMIT_SECRET:'test-only-rate-secret',
+    SITE_ORIGIN:'http://localhost:8888'
+  });
+  global.fetch=async(url,options={})=>{
+    const target=String(url);
+    requests.push({target,options});
+    if(target.endsWith('/rpc/hm_rate'))return new Response('true',{status:200});
+    if(target.includes('/storage/v1/object/hm-service-booking-photos/')){
+      if(options.method==='POST'&&failUpload)return new Response('{}',{status:503});
+      return new Response('{}',{status:200});
+    }
+    if(target.endsWith('/rest/v1/service_bookings')){
+      return failInsert
+        ?new Response('{}',{status:400})
+        :new Response(JSON.stringify([{id:JSON.parse(options.body).id}]),{status:201,headers:{'Content-Type':'application/json'}});
+    }
+    throw new Error('Unexpected mocked fetch target.');
+  };
+  try{
+    const payload={...validBooking,preferredAt:new Date(Date.now()+60*60*1000).toISOString(),photo:{
+      type:'image/jpeg',
+      data:Buffer.from([0xff,0xd8,0xff,0x01]).toString('base64')
+    }};
+    const event={
+      httpMethod:'POST',
+      headers:{'content-type':'application/json',origin:'http://localhost:8888','x-nf-client-connection-ip':'127.0.0.1'},
+      body:JSON.stringify(payload)
+    };
+    const failedUpload=await bookingFunction.handler(event);
+    assert.equal(failedUpload.statusCode,503);
+    assert.equal(requests.filter(item=>item.target.endsWith('/rest/v1/service_bookings')).length,0);
+    assert.equal(requests.filter(item=>item.target.includes('/storage/v1/object/hm-service-booking-photos/')).length,1);
+
+    requests.length=0;
+    failUpload=false;
+    failInsert=true;
+    const failedInsert=await bookingFunction.handler(event);
+    assert.equal(failedInsert.statusCode,503);
+    const storage=requests.filter(item=>item.target.includes('/storage/v1/object/hm-service-booking-photos/'));
+    assert.deepEqual(storage.map(item=>item.options.method),['POST','DELETE']);
+    assert.equal(requests.filter(item=>item.target.endsWith('/rest/v1/service_bookings')).length,1);
+    assert.equal(storage[1].options.headers['Content-Type'],undefined);
+    assert.equal(storage[1].options.headers.Authorization,undefined);
+    assert.equal(storage[1].options.headers.apikey,'test-only-server-key');
+  }finally{
+    global.fetch=originalFetch;
+    for(const key of keys){
+      if(previous[key]===undefined)delete process.env[key];
+      else process.env[key]=previous[key];
+    }
+  }
+});
+
 test('saves material enquiries and sends Resend emails best-effort through mocks',async()=>{
   const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN','HM_EMAIL_PROVIDER_TOKEN','EMAIL_FROM'];
   const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));

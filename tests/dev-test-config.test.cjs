@@ -36,6 +36,15 @@ test('TEST runner refuses a Supabase URL that does not match the explicit TEST r
   assert.match(result.error, /does not match/);
 });
 
+test('TEST runner refuses the actual production project even when the declared ref matches', () => {
+  const productionRef = 'qftvchsrqaevkfkhbnrj';
+  assert.match(validateTestEnvironment({
+    ...validConfig,
+    HM_TEST_SUPABASE_PROJECT_REF: productionRef,
+    SUPABASE_URL: `https://${productionRef}.supabase.co`
+  }).error, /production project cannot be used/);
+});
+
 test('TEST runner refuses non-local origin and enabled email settings', () => {
   assert.match(validateTestEnvironment({
     ...validConfig,
@@ -74,7 +83,7 @@ test('Netlify TEST process receives TEST settings without inherited production c
   assert.equal(child.SystemRoot, inherited.SystemRoot);
 });
 
-test('TEST site build uses a temporary publish directory and emits private staging robots', () => {
+test('TEST site build uses a temporary isolated Netlify root and emits private staging robots', () => {
   const root = path.resolve(__dirname, '..');
   const existingDist = path.join(root, 'dist');
   const existingIndex = fs.existsSync(path.join(existingDist, 'index.html'))
@@ -85,6 +94,9 @@ test('TEST site build uses a temporary publish directory and emits private stagi
   try {
     assert.ok(buildRoot.startsWith(os.tmpdir()));
     assert.ok(fs.existsSync(path.join(buildRoot, 'dist', 'index.html')));
+    assert.ok(fs.existsSync(path.join(buildRoot, 'netlify.toml')));
+    assert.ok(fs.existsSync(path.join(buildRoot, 'server', 'catalogue.json')));
+    assert.equal(fs.existsSync(path.join(buildRoot, '.env')), false);
     assert.match(fs.readFileSync(path.join(buildRoot, 'dist', 'robots.txt'), 'utf8'), /Disallow: \//);
     if (existingIndex) {
       assert.deepEqual(fs.readFileSync(path.join(existingDist, 'index.html')), existingIndex);
