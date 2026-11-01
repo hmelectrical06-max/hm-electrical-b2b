@@ -14,7 +14,7 @@ exports.handler=c.safe(async e=>{
  c.origin(e);const p=c.body(e,15000),stamp={updated_by:user.id,updated_at:new Date().toISOString()};
  if(p.action==='availability'){
   if(!m.trades.includes(p.trade)||!Number.isInteger(p.availableCount)||p.availableCount<0||p.availableCount>10000||!['available','on_request','fully_booked'].includes(p.availability))c.fail(400,'Invalid trade availability.');
-  const rows=await c.db('hm_manpower_categories?trade=eq.'+encodeURIComponent(p.trade),'PATCH',{description:m.text(p.description||'',600),available_count:p.availableCount,availability:p.availability,...stamp});if(rows.length!==1)c.fail(404,'Trade not found.');
+  const rows=await c.db('hm_manpower_categories?trade=eq.'+encodeURIComponent(p.trade),'PATCH',{description:m.text(p.description||'',600,false,true),available_count:p.availableCount,availability:p.availability,...stamp});if(rows.length!==1)c.fail(404,'Trade not found.');
  }else if(p.action==='request-status'){
   if(!/^[0-9a-f-]{36}$/i.test(p.id)||!m.statuses.includes(p.status))c.fail(400,'Invalid request status.');
   const rows=await c.db('hm_manpower_requests?id=eq.'+p.id,'PATCH',{status:p.status,updated_at:stamp.updated_at});if(rows.length!==1)c.fail(404,'Request not found.');
@@ -22,7 +22,7 @@ exports.handler=c.safe(async e=>{
   if(!knownProducts.has(p.id))c.fail(400,'Choose an existing catalogue product.');
   const current=await c.db('hm_catalogue_products?product_id=eq.'+encodeURIComponent(p.id)+'&select=data');if(current.length!==1)c.fail(404,'Product not found.');
   const data={...current[0].data};for(const key of ['name','size','unit','category','group'])data[key]=m.text(p[key],key==='name'?180:160,true);
-  data.description=m.text(p.description||'',2000);
+  data.description=m.text(p.description||'',2000,false,true);
   await c.db('hm_catalogue_products?product_id=eq.'+encodeURIComponent(p.id),'PATCH',{data,...stamp});
  }else if(p.action==='service'){
   if(!/^WORK-\d{4}$/.test(p.id)||typeof p.enabled!=='boolean')c.fail(400,'Invalid service.');

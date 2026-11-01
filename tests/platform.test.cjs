@@ -5,6 +5,7 @@ const payload=()=>({requestId:require('crypto').randomUUID(),trade:'Electrician'
 
 test('material navigation and quick categories have their preserved section target',()=>{const html=fs.readFileSync('public/index.html','utf8');assert.equal((html.match(/<section id="store">/g)||[]).length,1);assert.ok(html.indexOf('<section id="store">')<html.indexOf('id="results"'));});
 test('manpower request validation rejects unsafe quantities, fields, dates and contacts',()=>{
+ assert.equal(m.validate({...payload(),details:'Electrical team\nTwo shifts'}).details,'Electrical team\nTwo shifts');
  assert.equal(m.validate(payload()).quantity,3);for(const patch of [{quantity:0},{quantity:501},{quantity:1.5},{trade:'Admin'},{requiredDate:'2026-02-31'},{requiredDate:'2020-01-01'},{consent:false},{website:'spam'},{phone:'hello'},{siteLocation:'x\nInjected'}])assert.throws(()=>m.validate({...payload(),...patch}));
 });
 test('seven public trade categories contain no employee identities',()=>{assert.deepEqual(m.trades,['Electrician','Plumber','Fire Fitter','Welder','Helper','Civil Labour','Supervisor']);});
