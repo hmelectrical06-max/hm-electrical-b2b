@@ -49,5 +49,15 @@ exports.handler=async()=>{
   }catch(error){
     console.error(`[notify] Booking retry queue unavailable. ${emailFailureCode(error)}`);
   }
-  return {statusCode:200,body:JSON.stringify({enquiriesAccepted,bookingsAccepted})};
+  let manpowerAccepted=0;
+  if(process.env.HM_DUAL_SERVICE_ENABLED==='true')try{
+    const rows=await c.db('hm_manpower_requests?select=*&email_status=eq.pending&order=created_at.asc&limit=25');
+    for(const row of rows)try{
+      const emailId=await sendOfficeEmail({idempotencyKey:'hm-manpower-'+row.id,subject:'HM ELECTRICAL manpower request '+row.id,text:require('../../server/manpower.cjs').emailText(row)});
+      const updated=await c.db('hm_manpower_requests?id=eq.'+row.id,'PATCH',{email_status:'accepted',email_provider_id:emailId});
+      if(!Array.isArray(updated)||updated.length!==1)throw Error('EMAIL_STATUS_UPDATE_UNCONFIRMED');
+      manpowerAccepted++;
+    }catch(error){console.error(`[notify] Manpower email pending for ${row.id}. ${emailFailureCode(error)}`);}
+  }catch(error){console.error(`[notify] Manpower retry queue unavailable. ${emailFailureCode(error)}`);}
+  return {statusCode:200,body:JSON.stringify({enquiriesAccepted,bookingsAccepted,...(process.env.HM_DUAL_SERVICE_ENABLED==='true'?{manpowerAccepted}:{})})};
 };

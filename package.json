@@ -16,6 +16,7 @@
     "netlify-cli": "^27.15.0"
   },
   "dependencies": {
-    "pdfkit": "^0.20.2"
+    "pdfkit": "^0.20.2",
+    "sharp": "0.35.5"
   }
 }

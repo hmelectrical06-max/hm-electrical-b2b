@@ -73,6 +73,6 @@
   return terms.every(term=>normalizedText.includes(term));
  }
  const slug=value=>String(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
- const productPath=product=>`/products/${slug(`${product.id} ${product.name} ${product.size}`)}/`;
+ const productPath=product=>product._seoPath||`/products/${slug(`${product.id} ${product.name} ${product.size}`)}/`;
  return {normalize,searchText,matches,matchesProduct,slug,productPath};
 });

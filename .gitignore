@@ -7,3 +7,4 @@ dist/
 backups/
 *.log
 .vscode/
+supabase/.temp/
