@@ -5,6 +5,7 @@ const assert=require('node:assert/strict');
 const {categories,bookingStatuses,paymentStatuses,validateBooking,validateTechnician,validateCharge,maxPhotoBytes}=require('../server/service-bookings.cjs');
 const core=require('../server/core.cjs');
 const bookingFunction=require('../netlify/functions/service-booking.js');
+const adminServiceBookingsFunction=require('../netlify/functions/admin-service-bookings.js');
 const enquiryFunction=require('../netlify/functions/enquiry.js');
 const adminSessionFunction=require('../netlify/functions/admin-session.js');
 const notifyFunction=require('../netlify/functions/notify.js');
@@ -95,7 +96,7 @@ test('rejects photos exceeding the 2 MB limit with a readable message',()=>{
 });
 
 test('saves valid bookings, emails the office through a mock, and uploads optional photos',async()=>{
-  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN','RESEND_API_KEY','EMAIL_FROM'];
+  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN','HM_EMAIL_PROVIDER_TOKEN','EMAIL_FROM'];
   const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
   const originalFetch=global.fetch;
   const requests=[];
@@ -104,7 +105,7 @@ test('saves valid bookings, emails the office through a mock, and uploads option
   process.env.SUPABASE_SERVICE_ROLE_KEY='test-only-not-a-real-key';
   process.env.RATE_LIMIT_SECRET='test-only-not-a-real-secret';
   process.env.SITE_ORIGIN='http://localhost:8888';
-  process.env.RESEND_API_KEY='test-only-resend-key';
+  process.env.HM_EMAIL_PROVIDER_TOKEN='test-only-resend-key';
   process.env.EMAIL_FROM='HM ELECTRICAL <notifications@example.com>';
   global.fetch=async(url,options={})=>{
     const target=String(url);
@@ -179,7 +180,7 @@ test('saves valid bookings, emails the office through a mock, and uploads option
 });
 
 test('saves material enquiries and sends Resend emails best-effort through mocks',async()=>{
-  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN','RESEND_API_KEY','EMAIL_FROM'];
+  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RATE_LIMIT_SECRET','SITE_ORIGIN','HM_EMAIL_PROVIDER_TOKEN','EMAIL_FROM'];
   const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
   const originalFetch=global.fetch,requests=[];
   let failEmail=false,savedRequest=null;
@@ -188,7 +189,7 @@ test('saves material enquiries and sends Resend emails best-effort through mocks
     SUPABASE_SERVICE_ROLE_KEY:'test-only-not-a-real-key',
     RATE_LIMIT_SECRET:'test-only-not-a-real-secret',
     SITE_ORIGIN:'http://localhost:8888',
-    RESEND_API_KEY:'test-only-resend-key',
+    HM_EMAIL_PROVIDER_TOKEN:'test-only-resend-key',
     EMAIL_FROM:'HM ELECTRICAL <notifications@example.com>'
   });
   const product=catalogue[0],payload={
@@ -346,7 +347,7 @@ test('admin notifications are authenticated and preserve enquiry alerts if booki
 });
 
 test('classifies Resend failures safely and validates EMAIL_FROM syntax',()=>{
-  assert.equal(emailErrorCode(401),'RESEND_API_KEY_REJECTED');
+  assert.equal(emailErrorCode(401),'RESEND_CREDENTIAL_REJECTED');
   assert.equal(emailErrorCode(403),'RESEND_SENDER_OR_ACCOUNT_FORBIDDEN');
   assert.equal(emailErrorCode(422),'RESEND_SENDER_OR_REQUEST_REJECTED');
   assert.equal(emailErrorCode(429),'RESEND_RATE_LIMITED');
@@ -408,13 +409,13 @@ test('admin session and notification handlers return valid status on network err
 });
 
 test('scheduled notifier retries pending service-booking email through mocks',async()=>{
-  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','RESEND_API_KEY','EMAIL_FROM'];
+  const keys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','HM_EMAIL_PROVIDER_TOKEN','EMAIL_FROM'];
   const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
   const originalFetch=global.fetch,requests=[];
   Object.assign(process.env,{
     SUPABASE_URL:'https://notify-test.invalid',
     SUPABASE_SERVICE_ROLE_KEY:'test-only-not-a-real-key',
-    RESEND_API_KEY:'test-only-resend-key',
+    HM_EMAIL_PROVIDER_TOKEN:'test-only-resend-key',
     EMAIL_FROM:'HM ELECTRICAL <notifications@example.com>'
   });
   global.fetch=async(url,options={})=>{
@@ -456,4 +457,68 @@ test('validates technician fields and non-negative charges',()=>{
   assert.equal(validateCharge(102.345),102.35);
   assert.equal(validateCharge(null),null);
   assert.throws(()=>validateCharge(-1),{code:400,message:/charge between/});
+});
+
+test('Add Technician uses Supabase secret keys as apikey only and preserves admin session auth',async()=>{
+  const keys=['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY','ADMIN_USER_IDS','SITE_ORIGIN'];
+  const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+  const originalFetch=global.fetch,requests=[];
+  const adminId='00000000-0000-4000-8000-000000000501';
+  const technicianId='00000000-0000-4000-8000-000000000502';
+  Object.assign(process.env,{
+    SUPABASE_URL:'https://technician-test.supabase.co',
+    SUPABASE_ANON_KEY:'sb_publishable_test-key',
+    SUPABASE_SERVICE_ROLE_KEY:'sb_secret_test-key',
+    ADMIN_USER_IDS:adminId,
+    SITE_ORIGIN:'https://hmelectricalb2b.com'
+  });
+  global.fetch=async(url,options={})=>{
+    const target=String(url);
+    requests.push({target,options});
+    if(target.endsWith('/auth/v1/user'))return new Response(JSON.stringify({id:adminId}),{status:200,headers:{'Content-Type':'application/json'}});
+    if(target.includes('/rest/v1/service_technicians?select=id'))return new Response('',{status:206,headers:{'Content-Range':'0-0/0'}});
+    if(target.endsWith('/rest/v1/service_technicians')&&options.method==='POST')return new Response(JSON.stringify([{id:technicianId}]),{status:201,headers:{'Content-Type':'application/json'}});
+    throw new Error('Unexpected mocked fetch target.');
+  };
+  try{
+    const response=await adminServiceBookingsFunction.handler({
+      httpMethod:'POST',
+      headers:{
+        cookie:'__Host-hm_admin=admin-session-token',
+        origin:'https://hmelectricalb2b.com',
+        'content-type':'application/json'
+      },
+      body:JSON.stringify({action:'create-technician',name:'Test Technician',mobile:'8085550156',trade:'Electrical'})
+    });
+    assert.equal(response.statusCode,201);
+    const authRequest=requests.find(item=>item.target.endsWith('/auth/v1/user'));
+    assert.equal(authRequest.options.headers.apikey,'sb_publishable_test-key');
+    assert.equal(authRequest.options.headers.Authorization,'Bearer admin-session-token');
+    const databaseRequests=requests.filter(item=>item.target.includes('/rest/v1/service_technicians'));
+    assert.equal(databaseRequests.length,2);
+    for(const request of databaseRequests){
+      assert.equal(request.options.headers.apikey,'sb_secret_test-key');
+      assert.equal(request.options.headers.Authorization,undefined);
+    }
+  }finally{
+    global.fetch=originalFetch;
+    for(const key of keys){
+      if(previous[key]===undefined)delete process.env[key];
+      else process.env[key]=previous[key];
+    }
+  }
+});
+
+test('legacy Supabase service-role JWT remains in both server headers',()=>{
+  const previous=process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_SERVICE_ROLE_KEY='header.payload.signature';
+  try{
+    assert.deepEqual(core.serviceRoleHeaders(),{
+      apikey:'header.payload.signature',
+      Authorization:'Bearer header.payload.signature'
+    });
+  }finally{
+    if(previous===undefined)delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY=previous;
+  }
 });

@@ -33,7 +33,7 @@ Use a new, isolated Supabase test project. Apply, in order:
 
 These scripts were validated in an isolated in-memory PostgreSQL runtime with Supabase-like roles/storage tables. They have not been applied to a hosted Supabase project. The RFQ UI checks for the additive company/date columns before saving and fails with a migration message rather than silently dropping those details. Compare schemas and back up before any existing-database migration. Do not use sample fixtures on production. No migration runs automatically during build or deployment.
 
-Create the intended Supabase admin account privately, put its UUID in `ADMIN_USER_IDS`, and keep the service role key server-side. Populate the variable names in `.env.example`; use a long random `RATE_LIMIT_SECRET`. Optional email requires a verified Resend sender. Configure `SITE_ORIGIN` to exactly match the protected staging origin; it is checked for write requests.
+Create the intended Supabase admin account privately and put its UUID in `ADMIN_USER_IDS`. Set `SUPABASE_SERVICE_ROLE_KEY` to the matching project's server-only Supabase secret key, or its legacy `service_role` JWT. Modern `sb_secret_` keys are sent only in the `apikey` header; legacy JWT keys also use bearer authorization. Never expose either key in browser code. Populate the variable names in `.env.example`; use a long random `RATE_LIMIT_SECRET`. Optional email requires a verified Resend sender. Configure `SITE_ORIGIN` to exactly match the protected staging origin; it is checked for write requests.
 
 ## Protected Netlify staging — only when authorized
 

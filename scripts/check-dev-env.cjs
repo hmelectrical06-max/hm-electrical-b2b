@@ -20,7 +20,7 @@ const required = [
   'SITE_ORIGIN',
   'RATE_LIMIT_SECRET'
 ];
-const optional = ['RESEND_API_KEY', 'EMAIL_FROM'];
+const optional = ['HM_EMAIL_PROVIDER_TOKEN', 'EMAIL_FROM'];
 const missing = required.filter(name => !process.env[name]);
 const missingOptional = optional.filter(name => !process.env[name]);
 

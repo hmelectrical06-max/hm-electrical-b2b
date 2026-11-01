@@ -32,7 +32,7 @@ const runtimeEnvNames = [
   'ADMIN_USER_IDS',
   'SITE_ORIGIN',
   'RATE_LIMIT_SECRET',
-  'RESEND_API_KEY',
+  'HM_EMAIL_PROVIDER_TOKEN',
   'EMAIL_FROM'
 ];
 const required = [
@@ -46,7 +46,7 @@ function validateTestEnvironment(values) {
     return { error: `Missing TEST configuration variable names: ${missing.join(', ')}` };
   }
 
-  if (values.RESEND_API_KEY?.trim() || values.EMAIL_FROM?.trim()) {
+  if (values.HM_EMAIL_PROVIDER_TOKEN?.trim() || values.EMAIL_FROM?.trim()) {
     return { error: 'Email variables must be blank in .env.test; local email is disabled.' };
   }
 
@@ -87,7 +87,7 @@ function createNetlifyEnvironment(values, inherited = process.env) {
   for (const name of runtimeEnvNames) {
     childEnv[name] = values[name] || '';
   }
-  childEnv.RESEND_API_KEY = '';
+  childEnv.HM_EMAIL_PROVIDER_TOKEN = '';
   childEnv.EMAIL_FROM = '';
   childEnv.HM_SITE_MODE = 'staging';
   childEnv.NETLIFY_DISABLE_TELEMETRY = 'true';

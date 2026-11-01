@@ -3,7 +3,7 @@
 const c=require('./core.cjs');
 
 function emailErrorCode(status){
-  if(status===401)return 'RESEND_API_KEY_REJECTED';
+  if(status===401)return 'RESEND_CREDENTIAL_REJECTED';
   if(status===403)return 'RESEND_SENDER_OR_ACCOUNT_FORBIDDEN';
   if(status===422)return 'RESEND_SENDER_OR_REQUEST_REJECTED';
   if(status===429)return 'RESEND_RATE_LIMITED';
@@ -74,7 +74,7 @@ function formatBookingEmail(booking,reference,createdAt){
 
 async function sendOfficeEmail({idempotencyKey,subject,text}){
   const sender=validateSender(c.env('EMAIL_FROM'));
-  const apiKey=c.env('RESEND_API_KEY');
+  const apiKey=c.env('HM_EMAIL_PROVIDER_TOKEN');
   const response=await fetch('https://api.resend.com/emails',{
     method:'POST',
     headers:{

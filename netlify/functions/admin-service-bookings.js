@@ -3,7 +3,7 @@
 const c=require('../../server/core.cjs');
 const {bookingStatuses,paymentStatuses,technicianAvailability,validateTechnician,validateCharge}=require('../../server/service-bookings.cjs');
 const bucket='hm-service-booking-photos';
-const serviceRoleHeaders=()=>({apikey:c.env('SUPABASE_SERVICE_ROLE_KEY'),Authorization:'Bearer '+c.env('SUPABASE_SERVICE_ROLE_KEY'),'Content-Type':'application/json'});
+const serviceRoleHeaders=()=>c.serviceRoleHeaders({'Content-Type':'application/json'});
 const storageUrl=path=>c.env('SUPABASE_URL').replace(/\/+$/,'')+'/storage/v1/'+path;
 function validId(id){return typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);}
 function optionalText(value,max){if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value)||!value.trim())c.fail(400,'Invalid technician fields.');return value.trim();}

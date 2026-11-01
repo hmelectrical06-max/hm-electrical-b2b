@@ -5,7 +5,7 @@ const c=require('../../server/core.cjs');
 const {validateBooking,maxPhotoBytes}=require('../../server/service-bookings.cjs');
 const {formatBookingEmail,sendOfficeEmail,emailFailureCode}=require('../../server/email-notifications.cjs');
 const bucket='hm-service-booking-photos';
-const serviceRoleHeaders=()=>({apikey:c.env('SUPABASE_SERVICE_ROLE_KEY'),Authorization:'Bearer '+c.env('SUPABASE_SERVICE_ROLE_KEY')});
+const serviceRoleHeaders=()=>c.serviceRoleHeaders();
 const storageUrl=path=>c.env('SUPABASE_URL').replace(/\/+$/,'')+'/storage/v1/'+path;
 
 exports.handler=c.safe(async event=>{

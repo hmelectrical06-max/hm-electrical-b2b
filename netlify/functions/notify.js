@@ -2,7 +2,7 @@ const c=require('../../server/core.cjs');
 const {formatEnquiryEmail,formatBookingEmail,sendOfficeEmail,emailFailureCode}=require('../../server/email-notifications.cjs');
 // Scheduled invocation only; Netlify does not expose scheduled functions as web endpoints.
 exports.handler=async()=>{
-  c.env('RESEND_API_KEY');
+  c.env('HM_EMAIL_PROVIDER_TOKEN');
   c.env('EMAIL_FROM');
   let enquiriesAccepted=0,bookingsAccepted=0;
   try{

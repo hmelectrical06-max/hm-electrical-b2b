@@ -15,5 +15,6 @@ if(!fs.existsSync(path.join(source,'index.html')))throw Error('public/index.html
 fs.rmSync(output,{recursive:true,force:true});
 fs.cpSync(source,output,{recursive:true});
 require('./seo.cjs')(output);
+require('./check-publish-secrets.cjs')(output);
 if(!fs.existsSync(path.join(output,'index.html')))throw Error('Build output is missing index.html.');
 console.log('Built dist/ from public/. Netlify publishes only the static website; Functions remain outside it.');

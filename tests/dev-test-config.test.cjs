@@ -20,7 +20,7 @@ const validConfig = {
   ADMIN_USER_IDS: '00000000-0000-4000-8000-000000000099',
   SITE_ORIGIN: 'http://localhost:8888',
   RATE_LIMIT_SECRET: 'test-only-local-rate-limit-secret-32-chars',
-  RESEND_API_KEY: '',
+  HM_EMAIL_PROVIDER_TOKEN: '',
   EMAIL_FROM: ''
 };
 
@@ -43,7 +43,7 @@ test('TEST runner refuses non-local origin and enabled email settings', () => {
   }).error, /SITE_ORIGIN/);
   assert.match(validateTestEnvironment({
     ...validConfig,
-    RESEND_API_KEY: 'configured'
+    HM_EMAIL_PROVIDER_TOKEN: 'configured'
   }).error, /Email variables must be blank/);
 });
 
@@ -55,7 +55,7 @@ test('Netlify TEST process receives TEST settings without inherited production c
     SUPABASE_ANON_KEY: 'production-anon-key',
     SUPABASE_SERVICE_ROLE_KEY: 'production-service-key',
     NETLIFY_AUTH_TOKEN: 'production-netlify-token',
-    RESEND_API_KEY: 'production-email-key',
+    HM_EMAIL_PROVIDER_TOKEN: 'production-email-key',
     HM_SITE_MODE: 'production',
     HM_LAUNCH_APPROVED: 'true'
   };
@@ -65,7 +65,7 @@ test('Netlify TEST process receives TEST settings without inherited production c
   assert.equal(child.SUPABASE_ANON_KEY, validConfig.SUPABASE_ANON_KEY);
   assert.equal(child.SUPABASE_SERVICE_ROLE_KEY, validConfig.SUPABASE_SERVICE_ROLE_KEY);
   assert.equal(child.NETLIFY_AUTH_TOKEN, undefined);
-  assert.equal(child.RESEND_API_KEY, '');
+  assert.equal(child.HM_EMAIL_PROVIDER_TOKEN, '');
   assert.equal(child.EMAIL_FROM, '');
   assert.equal(child.HM_SITE_MODE, 'staging');
   assert.equal(child.HM_LAUNCH_APPROVED, undefined);
