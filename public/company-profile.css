@@ -1,0 +1,21 @@
+.company-profile-download{display:flex;justify-content:space-between;align-items:center;gap:28px;margin:0 0 32px;padding:30px;background:#fff;border:1px solid #d7dcd9;border-left:4px solid #dcb575}
+.company-profile-download h3{font:400 30px/1.2 Georgia,serif;margin:10px 0;color:#132c3e}
+.company-profile-download h3 a{color:inherit;text-decoration:none}
+.company-profile-download h3 a:hover{text-decoration:underline}
+.company-profile-download p{font-size:14px;line-height:1.7;margin:8px 0}
+.company-profile-download .eyebrow{font-size:10px;color:#806037}
+.company-profile-buttons{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.company-profile-buttons a{display:inline-flex;justify-content:center;align-items:center;gap:16px;white-space:nowrap;text-decoration:none;min-height:48px}
+.profile-download-button{padding:15px 21px;border:1px solid #132c3e;color:#132c3e;font-size:12px;font-weight:600;border-radius:2px}
+.profile-download-button:hover{background:#edf1f3}
+.profile-file-info{font-size:12px!important;color:#546571;letter-spacing:.2px}
+.profile-document{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;margin:32px 0;padding:26px!important;border:1px solid #d7dcd9;background:#fff}
+.profile-cover{display:block;background:#edf1f3;border:1px solid #d7dcd9}
+.profile-cover img{display:block;width:100%;height:auto}
+.profile-document h2{margin-top:0;font-size:28px}
+.profile-document p{font-size:14px;line-height:1.7}
+.profile-private-note{font-size:12px!important;color:#546571;margin-top:20px}
+.profile-actions{margin-bottom:28px}
+.company-profile-buttons a:focus-visible,.profile-cover:focus-visible{outline:3px solid #4b6c99;outline-offset:4px}
+@media(max-width:760px){.company-profile-download{align-items:flex-start;flex-direction:column;padding:24px;gap:16px}.company-profile-download h3{font-size:27px}.profile-document{grid-template-columns:1fr;gap:22px;padding:18px!important}.company-profile-buttons{width:100%}.company-profile-buttons a{flex:1}.profile-document h2{font-size:26px}}
+@media print{.company-profile-buttons,.profile-cover{display:none}.profile-document{display:block;border:0;padding:0!important}}

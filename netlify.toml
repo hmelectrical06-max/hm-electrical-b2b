@@ -14,6 +14,14 @@
   schedule = "*/5 * * * *"
 
 [[headers]]
+  for = "/downloads/HM-ELECTRICAL-Company-Profile-2026-Public.pdf"
+  [headers.values]
+    Content-Type = "application/pdf"
+    Content-Disposition = "inline; filename=\"HM-ELECTRICAL-Company-Profile-2026.pdf\""
+    X-Content-Type-Options = "nosniff"
+    X-Robots-Tag = "noindex"
+
+[[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
     Cache-Control = "no-store"
