@@ -4,9 +4,17 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const line=(x1,y1,x2,y2,color='#526776',w=8)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>`;
 const rect=(x,y,w,h,fill='#d8e1e6',r=8)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" stroke="#526776" stroke-width="4"/>`;
 const circle=(x,y,r,fill='#d8e1e6')=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#526776" stroke-width="5"/>`;
-function family(p){const n=p.name.toLowerCase();
+function family(p){const n=p.name.toLowerCase().split(/[—–]/)[0].trim();
+ if(/meter panel/.test(n))return 'panel';
+ if(/screwdriver/.test(n))return 'screwdriver';
+ if(/angle grinder/.test(n))return 'grinder';
+ if(/led panel|holder|ceiling rose/.test(n))return 'light';
+ if(/industrial plug|industrial socket/.test(n))return 'socket';
+ if(/cable tray/.test(n))return 'tray';
+ if(/(?:gi|ms) base plate/.test(n))return 'plate';
+ if(/enhancement compound/.test(n))return 'bottle';
  if(/meter|tester|test leads|voltage detector/.test(n))return 'meter';
- if(/drill bit|core bit|hole saw/.test(n))return 'wheel';
+ if(/drill bit|core bit|hole saw/.test(n))return 'bit';
  if(/claw hammer|ball peen hammer/.test(n))return 'hammer';
  if(/cable cutter|crimping tool|wire stripper|pipe cutter/.test(n))return 'pliers';
  if(/crimping machine|pipe threading machine/.test(n))return 'machine';
@@ -17,7 +25,7 @@ function family(p){const n=p.name.toLowerCase();
  if(/marker pen/.test(n))return 'pen';
  if(/flexible sprinkler/.test(n))return 'pipe';
  const rules=[['extinguisher',/extinguisher/],['sprinkler',/sprinkler/],['hose',/hose reel|hose cabinet|brigade inlet/],['valve',/valve|landing/],['detector',/smoke detector|manual call/],
- ['nut',/nut|washer/],['bolt',/screw|bolt|threaded|tie rod|anchor|wall plug|hammer fixing/],['gland',/gland/],['lug',/lug|ferrule/],['clamp',/clamp|cleat|saddle|support|bracket/],
+ ['nut',/nut|washer/],['bolt',/screw|bolt|threaded|tie rod|anchor|wall plug|hammer fixing/],['gland',/gland/],['lug',/\blug\b|ferrule/],['clamp',/clamp|cleat|saddle|support|bracket/],
  ['pipe',/pipe|conduit|coupler|bush|bend/],['tray',/tray|raceway|channel|angle|din rail|flat|earth strip/],['earth',/earth|lightning|air terminal|down conductor|test link/],
  ['wire',/wire|cable/],['breaker',/mcb|mccb|rccb|rcbo|isolator|spd/],['panel',/\bdb\b|panel|enclosure|feeder pillar/],['box',/box/],
  ['light',/led|light|bulb|batten|tube|cob|holder|ceiling rose|exit sign/],['socket',/socket|plug/],['switch',/switch|regulator|bell|indicator|push button|plate|selector/],
@@ -28,7 +36,17 @@ function family(p){const n=p.name.toLowerCase();
  return rules.find(([,r])=>r.test(n))?.[0]||'specification';
 }
 function drawing(p){const n=p.name.toLowerCase(),f=family(p);let s='';
- if(f==='breaker'){const poles=/\b(?:fp|4p)\b/.test(n)?4:/\b(?:tp|tpn|3p)\b/.test(n)?3:/\bdp\b/.test(n)?2:1;for(let i=0;i<poles;i++){const x=290+(i-poles/2)*62;s+=rect(x,135,60,188,'#f3f4f1')+rect(x+12,190,36,55,'#173b52')+circle(x+30,160,8,'#adb8be')+circle(x+30,299,8,'#adb8be');}s+=line(245,340,455,340,'#b2bfc6',9);}
+ if(f==='rod'){for(let i=0;i<4;i++)s+=line(235+i*18,300+i*4,450+i*18,145+i*4,'#9fada7',12)+line(450+i*18,145+i*4,472+i*18,130+i*4,'#c1a484',8);}
+ else if(f==='pen')s=line(250,297,435,160,'#374f60',35)+line(435,160,473,132,'#1b3547',42)+line(229,312,250,297,'#1b3547',17);
+ else if(f==='meter'&&/line tester|non contact/.test(n))s=line(252,300,381,173,'#8da4b2',12)+line(381,173,455,100,'#d4b854',32)+line(231,320,252,300,'#526776',8);
+ else if(f==='meter'&&/test leads/.test(n))s=`<path d="M270 280q-100-180 65-134t80 149" fill="none" stroke="#a44638" stroke-width="10"/><path d="M320 304q-95-180 65-134t80 149" fill="none" stroke="#243e50" stroke-width="10"/>`+line(270,280,290,339,'#a44638',18)+line(290,339,299,365,'#9bafb9',5)+line(320,304,340,363,'#243e50',18);
+ else if(f==='earth'&&/rod|electrode|air terminal|down conductor/.test(n))s=line(269,330,443,131,'#b68a57',25)+line(443,131,457,115,'#cfac78',12)+line(269,330,257,345,'#b68a57',12);
+ else if(f==='tape'&&/sleeve/.test(n))s=line(247,285,440,167,'#304d60',46)+circle(440,167,24,'#516f7e')+circle(440,167,12,'#f3f6f7');
+ else if(f==='tape'&&/cable tie/.test(n))s=`<path d="M300 295q-135-175 55-160t5 150l150 28" fill="none" stroke="#536d7c" stroke-width="14"/>`+rect(330,270,45,37,'#536d7c',2);
+ else if(f==='bit'){if(/core bit|hole saw/.test(n))s=rect(282,177,146,130,'#9aaeb9',3)+`<ellipse cx="355" cy="177" rx="73" ry="23" fill="#536d7b" stroke="#314f61" stroke-width="5"/>`+line(355,311,355,356,'#526776',18);else{s=line(265,320,429,148,'#9eafb7',29);for(let i=0;i<10;i++)s+=line(275+i*15,289-i*16,297+i*15,308-i*16,'#415d6d',5);}}
+ else if(f==='grinder')s=rect(251,188,216,76,'#bf9553',20)+circle(237,227,73,'#4b6170')+circle(237,227,24,'#c0cbd0')+line(362,182,362,138,'#233d4f',21);
+ else if(f==='plate'){s=rect(238,156,234,164,'#bccbd2',3);for(const x of [258,452])for(const y of [176,300])s+=circle(x,y,8,'#f3f6f7');}
+ else if(f==='breaker'){const poles=/\b(?:fp|4p)\b/.test(n)?4:/\b(?:tp|tpn|3p)\b/.test(n)?3:/\bdp\b/.test(n)?2:1;for(let i=0;i<poles;i++){const x=290+(i-poles/2)*62;s+=rect(x,135,60,188,'#f3f4f1')+rect(x+12,190,36,55,'#173b52')+circle(x+30,160,8,'#adb8be')+circle(x+30,299,8,'#adb8be');}s+=line(245,340,455,340,'#b2bfc6',9);}
  else if(f==='wire'){s=`<ellipse cx="340" cy="238" rx="138" ry="84" fill="none" stroke="#233e50" stroke-width="55"/><ellipse cx="340" cy="238" rx="138" ry="84" fill="none" stroke="#4e6f7d" stroke-width="5" stroke-dasharray="7 9"/>`+line(465,255,540,290,'#223e51',22)+line(540,290,566,302,'#b67e43',14);}
  else if(f==='pipe'){const bend=/bend|elbow/.test(n);s=bend?`<path d="M260 150v115q0 45 45 45h160" fill="none" stroke="#93a7b1" stroke-width="54"/>`:`<path d="M220 290L490 166" stroke="#a4b6be" stroke-width="59"/>`;s+=circle(bend?260:490,bend?150:166,30,'#526776')+circle(bend?260:490,bend?150:166,18,'#edf2f4');}
  else if(f==='tray'){s=`<path d="M194 276l258-120 85 61-258 121z" fill="#d6dfe3" stroke="#526776" stroke-width="5"/><path d="M194 276v-44l258-120v44M279 338v-45l258-120v44" fill="#aebfc7" stroke="#526776" stroke-width="5"/>`;for(let i=0;i<8;i++)s+=line(240+i*31,263-i*14,279+i*31,293-i*14,'#718895',6);}
