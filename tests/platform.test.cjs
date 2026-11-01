@@ -2,6 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
 const c=require('../server/core.cjs'),m=require('../server/manpower.cjs');
 const payload=()=>({requestId:require('crypto').randomUUID(),trade:'Electrician',quantity:3,siteLocation:'Mumbai TEST ONLY',duration:'2 days',contactName:'TEST ONLY',phone:'9999999999',email:'',requiredDate:new Date(Date.now()+86400000*7).toISOString().slice(0,10),details:'TEST ONLY',consent:true});
+
+test('material navigation and quick categories have their preserved section target',()=>{const html=fs.readFileSync('public/index.html','utf8');assert.equal((html.match(/<section id="store">/g)||[]).length,1);assert.ok(html.indexOf('<section id="store">')<html.indexOf('id="results"'));});
 test('manpower request validation rejects unsafe quantities, fields, dates and contacts',()=>{
  assert.equal(m.validate(payload()).quantity,3);for(const patch of [{quantity:0},{quantity:501},{quantity:1.5},{trade:'Admin'},{requiredDate:'2026-02-31'},{requiredDate:'2020-01-01'},{consent:false},{website:'spam'},{phone:'hello'},{siteLocation:'x\nInjected'}])assert.throws(()=>m.validate({...payload(),...patch}));
 });
