@@ -9,6 +9,14 @@ test('manpower request validation rejects unsafe quantities, fields, dates and c
  assert.equal(m.validate(payload()).quantity,3);for(const patch of [{quantity:0},{quantity:501},{quantity:1.5},{trade:'Admin'},{requiredDate:'2026-02-31'},{requiredDate:'2020-01-01'},{consent:false},{website:'spam'},{phone:'hello'},{siteLocation:'x\nInjected'}])assert.throws(()=>m.validate({...payload(),...patch}));
 });
 test('seven public trade categories contain no employee identities',()=>{assert.deepEqual(m.trades,['Electrician','Plumber','Fire Fitter','Welder','Helper','Civil Labour','Supervisor']);});
+
+test('pending manpower office notifications retry with a stable provider idempotency key',async()=>{
+ const previous={...process.env},originalFetch=global.fetch,requests=[];
+ Object.assign(process.env,{SUPABASE_URL:'https://manpower-notify.invalid',SUPABASE_SERVICE_ROLE_KEY:'test-only-server-key',HM_EMAIL_PROVIDER_TOKEN:'test-only-email-key',EMAIL_FROM:'HM ELECTRICAL <notifications@example.com>',HM_DUAL_SERVICE_ENABLED:'true'});
+ const row={id:'00000000-0000-4000-8000-000000000701',trade:'Electrician',quantity:2,site_location:'TEST ONLY',duration:'1 day',contact_name:'TEST ONLY',phone:'9999999999',required_date:'2026-12-15',details:'TEST ONLY'};
+ global.fetch=async(url,options={})=>{requests.push({url:String(url),options});if(String(url).includes('/rpc/hm_claim_notifications')||String(url).includes('/service_bookings?'))return new Response('[]');if(String(url).includes('hm_manpower_requests?select='))return new Response(JSON.stringify([row]));if(String(url)==='https://api.resend.com/emails')return new Response(JSON.stringify({id:'test-provider-id'}));if(String(url).includes('hm_manpower_requests?id=eq.')&&options.method==='PATCH')return new Response(JSON.stringify([row]));throw Error('Unexpected mock request');};
+ try{const result=await require('../netlify/functions/notify.js').handler();assert.equal(JSON.parse(result.body).manpowerAccepted,1);const email=requests.find(r=>r.url==='https://api.resend.com/emails');assert.equal(email.options.headers['Idempotency-Key'],'hm-manpower-'+row.id);assert.match(JSON.parse(email.options.body).text,/Quantity: 2/);assert.ok(requests.some(r=>r.options.method==='PATCH'&&JSON.parse(r.options.body).email_status==='accepted'));}finally{global.fetch=originalFetch;for(const key of Object.keys(process.env))if(!(key in previous))delete process.env[key];Object.assign(process.env,previous);}
+});
 test('all 984 materials have named representative artwork and correct common product families',()=>{
  const art=require('../scripts/product-illustrations.cjs'),s={window:{}};vm.runInNewContext(fs.readFileSync('public/data.js','utf8'),s);
  assert.equal(s.window.HM_DATA.materials.length,984);for(const p of s.window.HM_DATA.materials){assert.notEqual(art.family(p),'specification',p.name);assert.match(art.svg(p),/REPRESENTATIVE ILLUSTRATION/);assert.ok(art.svg(p).includes(p.id));}
