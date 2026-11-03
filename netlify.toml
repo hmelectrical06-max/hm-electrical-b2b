@@ -8,7 +8,9 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["sharp"]
+  # PDFKit resolves its standard fonts inside its own package at runtime.
+  # Keep it intact: inlining it produces a live-only '#standard-fonts' error.
+  external_node_modules = ["sharp", "pdfkit"]
   included_files = ["public/company.json", "server/catalogue.json"]
 
 [functions."notify"]

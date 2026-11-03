@@ -1,0 +1,7 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),{createRequire}=require('module'),esbuild=require('esbuild');
+test('PDF renderer works after production-style bundling with package-relative fonts',async()=>{
+ const root=path.resolve(__dirname,'..');fs.mkdirSync(path.join(root,'.netlify'),{recursive:true});const config=fs.readFileSync(path.join(root,'netlify.toml'),'utf8'),external=JSON.parse(config.match(/external_node_modules\s*=\s*(\[[^\]]+\])/)[1]),dir=fs.mkdtempSync(path.join(root,'.netlify/pdf-bundle-test-')),outfile=path.join(dir,'paper.cjs');
+ try{await esbuild.build({absWorkingDir:root,entryPoints:['server/company-paper-pdf.cjs'],bundle:true,platform:'node',format:'cjs',outfile,external,logLevel:'silent'});const {paperPdf}=createRequire(__filename)(outfile);for(const kind of ['material_request','quotation','purchase_order']){const pdf=await paperPdf({kind,number:'QA-DEPLOYMENT-ONLY',party_name:'TEST ONLY',subject:'TEST only',document_date:'2026-11-03',items:[{description:'TEST MCB',quantity:20,unit:'Nos',unit_rate:kind==='material_request'?null:100,tax_rate:0,discount_amount:0}],approved:false,totals:null});assert.equal(pdf.subarray(0,5).toString(),'%PDF-');assert.ok(pdf.length>3000);}}
+ finally{if(path.dirname(dir)!==path.join(root,'.netlify'))throw Error('Unsafe test cleanup');fs.rmSync(dir,{recursive:true,force:true});}
+});
