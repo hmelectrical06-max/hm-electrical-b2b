@@ -72,9 +72,10 @@ module.exports=function generate(output){
   ];
   const related=(groups.get(p.category)||[]).filter(item=>item.id!==p.id).slice(0,4);
   const crumbs=breadcrumb([{name:'Home',route:'/'},{name:'Materials',route:'/materials/'},{name:p.category,route:categoryRoute},{name:`${p.name} ${p.size}`,route}]);
-  const additionalProperty=details.filter(([name])=>name!=='Product code').map(([name,value])=>({'@type':'PropertyValue',name,value}));
+  // Enquiry-only specifications have no verified offers or product reviews.
+  // Describe them as ordinary web pages instead of invalid Product rich results.
   const schema={'@context':'https://schema.org','@graph':[
-   {'@type':'Product','@id':domain+route+'#product',url:domain+route,name:`${p.name} ${p.size}`,description,sku:p.id,category:p.category,image:domain+'/photos/products/'+p.id+'.svg',...(additionalProperty.length?{additionalProperty}: {})},
+   {'@type':'WebPage','@id':domain+route+'#webpage',url:domain+route,name:`${p.name} ${p.size}`,description,keywords:p.category,image:domain+'/photos/products/'+p.id+'.svg',about:{'@type':'Thing',name:`${p.name} ${p.size}`,identifier:p.id,description:details.map(([name,value])=>`${name}: ${value}`).join('; ')}},
    {'@type':'BreadcrumbList',itemListElement:crumbs.itemListElement}
   ]};
   const descriptionDetails=p.description||p.longDescription||'';

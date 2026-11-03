@@ -26,7 +26,9 @@ test('staging and production SEO modes preserve public routes and exclude privat
    const html=fs.readFileSync(file,'utf8');assert.equal([...html.matchAll(/rel="canonical"/g)].length,1,route);
    assert.ok(html.includes(`href="https://hmelectricalb2b.com${route}"`),route);
    if(route.startsWith('/products/')){
-    assert.match(html,/"@type":"Product"/,route);
+    assert.match(html,/"@type":"WebPage"/,route);
+    assert.match(html,/"about":\{"@type":"Thing"/,route);
+    assert.doesNotMatch(html,/"@type":"Product"/,route);
     assert.match(html,/"@type":"BreadcrumbList"/,route);
     assert.doesNotMatch(html,/"(?:offers|aggregateRating|review|price|availability)"/i,route);
     assert.match(html,/MRP on request/,route);
@@ -75,7 +77,9 @@ test('staging and production SEO modes preserve public routes and exclude privat
    assert.ok(html.includes(`href="https://hmelectricalb2b.com${route}"`),route);
    assert.match(html,/name="robots" content="index,follow"/,route);
    if(route.startsWith('/products/')){
-    assert.match(html,/"@type":"Product"/,route);
+    assert.match(html,/"@type":"WebPage"/,route);
+    assert.match(html,/"about":\{"@type":"Thing"/,route);
+    assert.doesNotMatch(html,/"@type":"Product"/,route);
     assert.match(html,/"@type":"BreadcrumbList"/,route);
     assert.doesNotMatch(html,/"(?:offers|aggregateRating|review|price|availability)"/i,route);
     assert.match(html,/MRP on request/,route);
@@ -87,3 +91,4 @@ test('staging and production SEO modes preserve public routes and exclude privat
   }
  }finally{process.env=previous;fs.rmSync(output,{recursive:true,force:true});}
 });
+
