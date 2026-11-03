@@ -88,7 +88,7 @@ async function loadOverview(){
   $('metricProducts').textContent=String(products.length);$('statusSummary').replaceChildren();
   const [enquiries,quotations,inventory]=await Promise.allSettled([
     api('admin-enquiries?overview=1').then(response=>response.json()),
-    api('admin-quotations?view=summary').then(response=>response.json()),
+    api('admin-company-documents?summary=1').then(response=>response.json()),
     api('admin-inventory?view=summary').then(response=>response.json())
   ]);
   if(enquiries.status==='fulfilled'){
@@ -98,7 +98,7 @@ async function loadOverview(){
     $('metricEnquiries').textContent='Unavailable';
     const note=document.createElement('p');note.textContent=enquiries.reason.message;$('statusSummary').append(note);
   }
-  $('metricQuotations').textContent=quotations.status==='fulfilled'?String(quotations.value.counts?.draft??0):'Setup required';
+  $('metricQuotations').textContent=quotations.status==='fulfilled'?String(quotations.value.total??0):'Setup required';
   $('metricInventory').textContent=inventory.status==='fulfilled'?String(inventory.value.products_with_stock??0):'Setup required';
 }
 async function load(){if(busy)return;busy=true;$('message').textContent='Loading enquiries…';try{const b=await(await api('admin-enquiries?'+params())).json();$('login').hidden=true;$('workspace').hidden=false;$('rows').replaceChildren();for(const r of b.rows){const tr=document.createElement('tr');cell(tr,new Date(r.created_at).toLocaleString()+'\n'+r.id);cell(tr,r.name+(r.company_name?'\nCompany: '+r.company_name:'')+'\n'+r.phone+'\n'+(r.email||'Email not supplied'));cell(tr,r.items.length?r.items.map(i=>`${i.id} | ${i.name} ${i.size}\n${i.qty} ${i.unit}`).join('\n\n'):'No catalogue items');cell(tr,r.location+(r.required_date?'\nRequired by: '+r.required_date:'')+'\n'+r.type+'\n'+r.details);const td=cell(tr,''),select=document.createElement('select');select.setAttribute('aria-label','Status for '+r.name);for(const status of statuses){const option=document.createElement('option');option.value=option.textContent=status;select.append(option);}select.value=r.status;select.onchange=async()=>{select.disabled=true;try{await api('admin-enquiries',json('PATCH',{id:r.id,status:select.value}));r.status=select.value;$('message').textContent='Status saved.';loadOverview();}catch(error){select.value=r.status;$('message').textContent=error.message;}finally{select.disabled=false;}};td.append(select);cell(tr,r.email_status==='accepted'?'Provider accepted':'Pending retry');$('rows').append(tr);}$('prev').disabled=page===0;$('next').disabled=!b.more;$('page').textContent='Page '+(page+1);$('message').textContent=b.rows.length?'Showing '+b.rows.length+' enquiries.':'No matching enquiries.';}catch(error){$('message').textContent=error.message;}finally{busy=false;}}

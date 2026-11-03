@@ -8,7 +8,7 @@
  const request=(name,body)=>api(name,body?json('POST',body):{}).then(r=>r.json());
  function hide(){document.querySelectorAll('#workspace .view,#workspace .platform-view').forEach(v=>v.hidden=true);}
  function mark(key){nav.querySelectorAll('[data-desk]').forEach(b=>b.setAttribute('aria-current',b.dataset.desk===key?'page':'false'));nav.querySelector('details').open=false;}
- function show(key){mark(key);if(original[key]){original[key].click();return;}hide();desk.hidden=false;if(key==='enquiries')inbox();if(key==='products')products();if(key==='files')files();}
+ function show(key){mark(key);if(original[key]){original[key].click();if(key==='home'&&typeof loadOverview==='function')loadOverview();return;}hide();desk.hidden=false;if(key==='enquiries')inbox();if(key==='products')products();if(key==='files')files();}
  for(const [key,label]of [['home','Home'],['enquiries','Customer enquiries'],['products','Products & rates'],['suppliers','Suppliers'],['documents','Letterhead & PDFs']]){const b=document.createElement('button');b.type='button';b.dataset.desk=key;b.textContent=label;b.onclick=()=>show(key);nav.append(b);}
  const more=document.createElement('details');more.className='daily-more';more.innerHTML='<summary>More</summary><div></div>';nav.append(more);
  const extra=more.querySelector('div');function option(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{mark('');fn();};extra.append(b);}
