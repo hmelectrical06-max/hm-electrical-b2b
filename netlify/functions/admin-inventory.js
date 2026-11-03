@@ -13,7 +13,7 @@ async function inventoryDb(path,method='GET',data){
 }
 
 async function loadBalances(){
-  const balances=await inventoryDb('inventory_balances?select=product_id,on_hand,reserved,updated_at&limit=1000');
+  const balances=[];for(let offset=0;offset<20000;offset+=500){const page=await inventoryDb('inventory_balances?select=product_id,on_hand,reserved,updated_at&order=product_id&limit=500&offset='+offset);balances.push(...page);if(page.length<500)break;}
   return new Map(balances.map(row=>[row.product_id,row]));
 }
 
@@ -35,7 +35,7 @@ exports.handler=c.safe(async event=>{
       return c.reply(200,{ok:true,rows:movements,page:requestedPage});
     }
     const balances=await loadBalances();
-    const rows=catalogue.map(product=>({
+    const rows=(await require('../../server/live-catalogue.cjs').products()).map(product=>({
       id:product.id,sourceCode:product.sourceCode,name:product.name,size:product.size,
       unit:product.unit,category:product.category,
       ...(balances.get(product.id)||{on_hand:null,reserved:null,updated_at:null})
@@ -46,7 +46,7 @@ exports.handler=c.safe(async event=>{
   c.origin(event);
   const payload=c.body(event,12000);
   let validated;
-  try{validated=validateMovement(payload);}
+  try{validated=validateMovement(payload,typeof payload.product_id==='string'&&payload.product_id.startsWith('ADD-')?[await require('../../server/live-catalogue.cjs').product(payload.product_id)]:catalogue);}
   catch(error){c.fail(400,error.message);}
   const result=await inventoryDb('rpc/hm_inventory_movement','POST',{
     ...validated.movement,p_actor_id:user.id

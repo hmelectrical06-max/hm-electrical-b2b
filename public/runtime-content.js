@@ -8,6 +8,7 @@
   if(window.HM_DATA&&Array.isArray(content.products)){
    const byId=new Map(content.products.map(p=>[p.id,p]));
    for(const p of window.HM_DATA.materials){const fresh=byId.get(p.id);if(fresh)Object.assign(p,fresh,{_seoPath:originalPaths.get(p.id)});}
+   const merged=content.products.map(fresh=>{const old=window.HM_DATA.materials.find(p=>p.id===fresh.id);return Object.assign(old||{},fresh,{_seoPath:originalPaths.get(fresh.id)||(fresh.id.startsWith('ADD-')?'/#materials':undefined)});});window.HM_DATA.materials.splice(0,window.HM_DATA.materials.length,...merged);
    const services=new Map((content.services||[]).map(p=>[p.id,p]));for(const p of window.HM_DATA.services){const fresh=services.get(p.id);if(fresh)Object.assign(p,fresh);}
    if(typeof render==='function')render();if(typeof serviceRender==='function')serviceRender();if(typeof cascade==='function')cascade();
   }

@@ -3,31 +3,31 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Admin dashboard | HM ELECTRICAL</title><link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="admin-upgrade.css"><script defer src="../data.js"></script><script defer src="admin.js"></script><script defer src="admin-mfa.js"></script><script defer src="admin-platform.js"></script><link rel="stylesheet" href="admin-platform.css">
-<link rel="stylesheet" href="admin-suppliers.css"><script defer src="admin-suppliers.js"></script><link rel="stylesheet" href="admin-documents.css"></head>
+<link rel="stylesheet" href="admin-suppliers.css"><script defer src="admin-suppliers.js"></script><link rel="stylesheet" href="admin-documents.css"><link rel="stylesheet" href="admin-simple.css"></head>
 <body>
 <header><a class="brand" href="/">HM <span>ELECTRICAL<small>B2B ADMINISTRATION</small></span></a><a href="/">Business website ↗</a></header>
 <main>
 <p id="message" role="status" aria-live="polite"></p>
 <form id="login"><div><p class="eyebrow">SECURE WORKSPACE</p><h1>Admin sign in</h1></div><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button>Sign in securely</button><p>Sign-in uses the configured Supabase account and admin allowlist. Sessions expire after one hour. Open this page through Netlify or Netlify Dev; a file or static preview cannot access the admin API.</p></form>
 <section id="workspace" hidden>
-<div class="workspace-head"><div><p class="eyebrow">HM ELECTRICAL · OPERATIONS</p><h1>Business dashboard</h1><p id="accessLabel">Authenticated administrator</p></div><div class="workspace-actions"><button id="desktopNotifications" class="button-secondary" type="button">Enable desktop notifications</button><button id="notificationBell" type="button" aria-expanded="false" aria-controls="notificationsPanel"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>Notifications <span id="notificationCount" class="notification-count" aria-label="0 unread notifications">0</span></button><button id="logout" class="button-secondary" type="button">Sign out</button></div></div>
+<div class="workspace-head"><div><p class="eyebrow">HM ELECTRICAL · OPERATIONS</p><h1>My business desk</h1><p id="accessLabel">Private workspace · Only you and authorised admins</p></div><div class="workspace-actions"><button id="desktopNotifications" class="button-secondary" type="button">Enable desktop notifications</button><button id="notificationBell" type="button" aria-expanded="false" aria-controls="notificationsPanel"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></svg>Notifications <span id="notificationCount" class="notification-count" aria-label="0 unread notifications">0</span></button><button id="logout" class="button-secondary" type="button">Sign out</button></div></div>
 <section id="notificationsPanel" class="notification-panel" aria-label="Notifications" hidden>
 <div class="notification-panel-head"><div><h2>Notifications</h2><p id="notificationMessage" role="status" aria-live="polite">New enquiries and bookings refresh while you are signed in.</p></div><button id="markNotificationsRead" class="button-secondary" type="button">Mark all read</button></div>
 <ul id="notificationList" class="notification-list"></ul>
 </section>
 <nav class="tabs" aria-label="Admin sections"><button type="button" data-view="overview" aria-current="page">Overview</button><button type="button" data-view="enquiries">Customer enquiries</button><button type="button" data-view="catalogue">Product catalogue</button><button type="button" data-view="quotations">Quotations</button><button type="button" data-view="inventory">Inventory</button><button type="button" data-view="serviceBookings">Service bookings</button><button type="button" data-view="photos">Product photos</button></nav>
 <section id="overviewView" class="view">
-<div class="section-title"><div><h2>Overview</h2><p>Live totals from catalogue data and the configured enquiry database.</p></div><button id="refreshOverview" type="button" class="button-secondary">Refresh</button></div>
+<div class="section-title"><div><h2>Overview</h2><p>Customer se enquiry → supplier se rate → customer ko quotation → supplier ko order.</p></div><button id="refreshOverview" type="button" class="button-secondary">Refresh</button></div>
 <div class="metric-grid">
 <article class="metric"><span>Catalogue products</span><strong id="metricProducts">—</strong><small>Current product catalogue</small></article>
 <article class="metric"><span>Customer enquiries</span><strong id="metricEnquiries">—</strong><small>Stored enquiry records</small></article>
 <article class="metric"><span>Draft quotations</span><strong id="metricQuotations">—</strong><small>Saved draft quotations</small></article>
 <article class="metric"><span>Products with stock</span><strong id="metricInventory">—</strong><small>Godown products with recorded on-hand balances</small></article>
-<article class="metric setup"><span>Orders</span><strong>Setup required</strong><small>No order management backend configured</small></article>
-<article class="metric setup"><span>Sales</span><strong>Setup required</strong><small>No sales/payment records configured</small></article>
+
+
 </div>
 <article class="panel"><div class="section-title"><div><h3>Enquiry status</h3><p>Counts returned from the authenticated enquiry store.</p></div></div><div id="statusSummary" class="status-grid"><p>Sign in to load enquiry totals.</p></div></article>
-<article class="notice"><strong>Dashboard features</strong><p>Manage quotation drafts, revisions, PDFs and stock movements in their admin sections. Enquiries and service requests save online; pending email notifications retry automatically. Orders, supplier purchasing, payments, sales reports, uploads and granular staff roles are not implemented.</p></article>
+
 </section>
 <section id="enquiriesView" class="view" hidden>
 <div class="section-title"><div><h2>Customer enquiries</h2><p>Manage and export requests already stored by the configured enquiry service.</p></div><button id="refresh" type="button" class="button-secondary">Refresh</button></div>
@@ -127,6 +127,6 @@
 </section>
 </section>
 </main>
-<script src="admin-documents.js" defer></script></body>
+<script src="admin-documents.js" defer></script><script defer src="admin-simple.js"></script></body>
 </html>
 

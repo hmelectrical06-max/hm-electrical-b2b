@@ -75,6 +75,7 @@ test('inventory migration creates a private append-only ledger and atomic balanc
 test('inventory API exposes only catalogue balances to an authenticated admin',async()=>{
   let restored=false;
   const restore=configureMockFetch(async url=>{
+    if(url.includes('/rest/v1/hm_catalogue_products?'))return new Response(JSON.stringify(catalogue.slice(Number(new URL(url).searchParams.get('offset')),Number(new URL(url).searchParams.get('offset'))+500).map(p=>({product_id:p.id,data:p}))),{status:200});
     if(url.includes('/rest/v1/inventory_balances?select=')){
       return new Response(JSON.stringify([{
         product_id:product.id,on_hand:6,reserved:2,updated_at:'2026-10-29T08:00:00.000Z'

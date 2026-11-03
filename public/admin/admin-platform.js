@@ -7,7 +7,7 @@
  function showError(error){el('platformMessage').textContent=error.message;}
  async function save(data){el('platformMessage').textContent='Saving…';try{const d=await send(data);el('platformMessage').textContent=d.message;return true;}catch(e){showError(e);return false;}}
  const buttons=[['products','Live products & photos'],['manpower','Manpower & availability'],['services','Service listings'],['audit','Audit log']];
- for(const [key,label]of buttons){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>open(key,label);nav.append(b);}
+ for(const [key,label]of buttons){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.platform=key;b.onclick=()=>open(key,label);nav.append(b);}
  nav.addEventListener('click',e=>{if(e.target.closest('[data-view]'))view.hidden=true;});
  function field(label,name,value='',type='text',extra=''){return `<label>${escape(label)}<input name="${name}" type="${type}" value="${escape(value)}" ${extra}></label>`;}
  function select(name,values,value){return `<select name="${name}">${values.map(v=>`<option${v===value?' selected':''}>${escape(v)}</option>`).join('')}</select>`;}

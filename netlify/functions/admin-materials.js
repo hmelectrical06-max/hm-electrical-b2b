@@ -1,0 +1,14 @@
+'use strict';
+const c=require('../../server/core.cjs'),live=require('../../server/live-catalogue.cjs'),{text}=require('../../server/manpower.cjs');
+function price(v){if(v===null||v==='')return null;const n=Number(v);if(!Number.isFinite(n)||n<0||n>1e11)c.fail(400,'Enter a positive rate, zero, or leave blank to remove it.');return Math.round(n*100)/100;}
+exports.handler=c.safe(async e=>{const user=await c.admin(e);
+ if(e.httpMethod==='GET'){const [products,metadata]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select=*&order=product_id')]);const byId=new Map(metadata.map(m=>[m.product_id,m]));return c.reply(200,{ok:true,products:products.map(p=>({...p,metadata:byId.get(p.id)||{}}))});}
+ if(e.httpMethod!=='POST')return c.reply(405,{ok:false});c.origin(e);const p=c.body(e,15000),stamp={updated_by:user.id,updated_at:new Date().toISOString()};
+ if(p.action==='rates'){await live.product(p.id);await c.db('catalogue_product_metadata?on_conflict=product_id','POST',{product_id:p.id,purchase_price:price(p.purchase_price),retail_price:price(p.retail_price),wholesale_price:price(p.wholesale_price),public_price_mode:'request',...stamp},{Prefer:'resolution=merge-duplicates,return=representation'});return c.reply(200,{ok:true,message:'Private rates saved. Blank rates were removed. Buying rates are never published.'});}
+ if(p.action==='remove-photo'){await live.product(p.id);await c.db('catalogue_product_metadata?on_conflict=product_id','POST',{product_id:p.id,product_photo_url:null,photo_rights_source_url:null,photo_rights_verified:false,...stamp},{Prefer:'resolution=merge-duplicates,return=representation'});return c.reply(200,{ok:true,message:'Photo removed from the website. Previous upload remains backed up.'});}
+ if(!['create','update'].includes(p.action))c.fail(400,'Choose a material action.');
+ if(typeof p.hidden!=='boolean')c.fail(400,'Choose whether to show this material.');const data={};for(const key of ['name','size','unit','category','group'])data[key]=text(p[key],160,true);data.description=text(p.description||'',2000,false,true);data.hidden=p.hidden;
+ if(p.action==='create'){if(!/^ADD-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(p.id||''))c.fail(400,'Invalid new material reference.');data.id=p.id;const old=await c.db('hm_catalogue_products?product_id=eq.'+p.id+'&select=data');if(old.length){if(!Object.keys(data).every(key=>old[0].data[key]===data[key]))c.fail(409,'This reference already exists. Reload the material.');}else await c.db('hm_catalogue_products','POST',{product_id:p.id,data,...stamp});}
+ else {const old=await live.product(p.id);await c.db('hm_catalogue_products?product_id=eq.'+encodeURIComponent(p.id),'PATCH',{data:{...old,...data},...stamp});}
+ return c.reply(200,{ok:true,id:p.id,message:'Material saved. The public catalogue refreshes automatically.'});
+});
