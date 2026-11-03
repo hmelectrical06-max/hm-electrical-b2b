@@ -10,7 +10,7 @@ vm.runInNewContext(fs.readFileSync('public/data.js','utf8'),browser);
 const products=browser.window.HM_DATA.materials;
 
 test('all source catalogue products are searchable by name, category, size, and both codes',()=>{
- assert.equal(products.length,984);
+ assert.equal(products.length,3541);
  assert.equal(new Set(products.map(product=>product.id)).size,products.length);
  for(const product of products){
   for(const field of ['name','category','size','id','sourceCode']){
@@ -52,8 +52,9 @@ test('known catalogue category aliases find materials from the intended category
 test('catalogue photo and technical metadata gaps remain explicit and source files resolve',()=>{
  assert.equal(products.filter(product=>product.image&&!/placeholder|illustration/i.test(product.image)).length,0);
  assert.equal(products.filter(product=>product.imageVerified===true||product.photoRightsVerified===true).length,0);
- assert.equal(products.filter(product=>product.hsn||product.hsnCode||product.HSN).length,0);
- assert.equal(products.filter(product=>product.description||product.specification||product.specifications).length,0);
+ assert.equal(products.filter(product=>product.hsn).length,2646);
+ assert.ok(products.filter(product=>product.hsn).every(p=>p.hsnStatus.includes('Owner-supplied reference')));
+ assert.equal(products.filter(product=>product.description||product.specification||product.specifications).length,2557);
  for(const product of products){
   assert.ok(product.image,`${product.id} should retain its source image field`);
   assert.ok(fs.existsSync(`public/${product.image}`),`${product.id} image reference should resolve`);

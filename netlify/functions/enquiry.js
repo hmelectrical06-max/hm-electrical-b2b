@@ -3,9 +3,9 @@ const {formatEnquiryEmail,sendOfficeEmail,emailFailureCode}=require('../../serve
 exports.handler=c.safe(async e=>{
   if(e.httpMethod!=='POST')return c.reply(405,{ok:false});
   c.origin(e);
-  const input=c.body(e),extra=[];
-  if(Array.isArray(input.items))for(const item of input.items.slice(0,200))if(typeof item.id==='string'&&item.id.startsWith('ADD-')){const product=await require('../../server/live-catalogue.cjs').product(item.id);if(product.hidden)c.fail(400,'This material is not currently listed. Describe your requirement instead.');extra.push(product);}
-  const p=c.validate(input,[...require('../../server/catalogue.json'),...extra]);
+  const input=c.body(e),extra=[],catalogue=require('../../server/catalogue.json'),known=new Set(catalogue.map(p=>p.id));
+  if(Array.isArray(input.items))for(const item of input.items.slice(0,200))if(typeof item.id==='string'&&!known.has(item.id)&&item.id.startsWith('ADD-')){const product=await require('../../server/live-catalogue.cjs').product(item.id);if(product.hidden)c.fail(400,'This material is not currently listed. Describe your requirement instead.');extra.push(product);}
+  const p=c.validate(input,[...catalogue,...extra]);
   if(p.rfq_fields_requested){
     try{
       await c.db('enquiries?select=company_name,required_date&limit=0');

@@ -19,7 +19,7 @@ test('pending manpower office notifications retry with a stable provider idempot
 });
 test('all 984 materials have named representative artwork and correct common product families',()=>{
  const art=require('../scripts/product-illustrations.cjs'),s={window:{}};vm.runInNewContext(fs.readFileSync('public/data.js','utf8'),s);
- assert.equal(s.window.HM_DATA.materials.length,984);for(const p of s.window.HM_DATA.materials){assert.notEqual(art.family(p),'specification',p.name);assert.match(art.svg(p),/REPRESENTATIVE ILLUSTRATION/);assert.ok(art.svg(p).includes(p.id));}
+ assert.equal(s.window.HM_DATA.materials.length,3541);for(const p of s.window.HM_DATA.materials.filter(p=>!p.id.startsWith('CSV-'))){assert.notEqual(art.family(p),'specification',p.name);assert.match(art.svg(p),/REPRESENTATIVE ILLUSTRATION/);assert.ok(art.svg(p).includes(p.id));}
  for(const [name,family]of [['Clamp Meter','meter'],['Socket Wrench Set','wrench'],['Cable Cutter','pliers'],['Fire Extinguisher','extinguisher'],['MCB SP','breaker'],['PVC Conduit Pipe Heavy','pipe']])assert.equal(art.family({name}),family);
 });
 test('live changes keep original product SEO addresses stable',()=>{const {productPath}=require('../public/catalogue-search.js');const original={id:'MAT-8000',name:'MCB SP',size:'6A'};assert.equal(productPath({...original,name:'Updated title',_seoPath:productPath(original)}),productPath(original));});

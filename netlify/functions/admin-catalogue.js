@@ -8,7 +8,7 @@ const migrationMessage='Catalogue metadata is not set up yet. Review and apply s
 
 async function loadMetadata(){
   try{
-    const rows=await c.db('catalogue_product_metadata?select=*&limit=1000');
+    const rows=await require('../../server/live-catalogue.cjs').all('catalogue_product_metadata?select=*&order=product_id');
     return new Map(rows.map(row=>[row.product_id,row]));
   }catch(error){
     if(error.message==='A required service endpoint was not found. Check the Supabase URL and apply database/setup.sql.')c.fail(503,migrationMessage);

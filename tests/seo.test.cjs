@@ -7,13 +7,13 @@ test('staging and production SEO modes preserve public routes and exclude privat
  try{
   fs.cpSync('public',output,{recursive:true});delete process.env.HM_SITE_MODE;delete process.env.CONTEXT;
   generate(output);
-  assert.equal(fs.readdirSync(path.join(output,'products')).length,984);
+  assert.equal(fs.readdirSync(path.join(output,'products')).length,3541);
   assert.equal(fs.readdirSync(path.join(output,'materials')).length,16);
   assert.match(fs.readFileSync(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex,nofollow/);
   const sitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...sitemap.matchAll(/<loc>/g)].length,1011);
-  assert.equal([...sitemap.matchAll(/\/products\//g)].length,984);
+  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...sitemap.matchAll(/\/products\//g)].length,3541);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
   for(const route of ['/company-profile.html','/privacy.html','/asset-policy.html']){
@@ -54,8 +54,8 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(productionRobots,/Disallow: \/admin\//);
   assert.match(productionRobots,/Sitemap: https:\/\/hmelectricalb2b.com\/sitemap.xml/);
   const productionSitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,1011);
-  assert.equal([...productionSitemap.matchAll(/\/products\//g)].length,984);
+  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...productionSitemap.matchAll(/\/products\//g)].length,3541);
   assert.doesNotMatch(productionSitemap,/company-profile|privacy\.html|asset-policy|\/admin\//);
   assert.doesNotMatch(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex|PRIVATE REVIEW|hmelectricals\.com/);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="robots" content="index,follow"/);

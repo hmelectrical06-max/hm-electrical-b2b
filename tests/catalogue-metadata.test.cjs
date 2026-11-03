@@ -17,11 +17,11 @@ test('CSV export preserves the existing product IDs and leaves unverified fields
   const csv=exportCsv(products);
   assert.ok(csv.startsWith('\uFEFF'));
   const rows=parseCsv(csv);
-  assert.equal(rows.length,984);
+  assert.equal(rows.length,3541);
   assert.equal(rows[0].product_id,first.id);
   assert.equal(rows[0].mrp,'');
   assert.equal(rows[0].manufacturer_sku,'');
-  assert.equal(new Set(rows.map(row=>row.product_id)).size,984);
+  assert.equal(new Set(rows.map(row=>row.product_id)).size,3541);
 });
 
 test('CSV parser handles quoted commas, newlines, and escaped quotes',()=>{
@@ -103,7 +103,7 @@ test('admin catalogue API previews without writes and uses a merge-only upsert',
   global.fetch=async(url,options={})=>{
     const target=String(url);requests.push({target,options});
     if(target.endsWith('/auth/v1/user'))return new Response(JSON.stringify({id:'00000000-0000-4000-8000-000000000601'}),{status:200,headers:{'Content-Type':'application/json'}});
-    if(target.includes('/rest/v1/catalogue_product_metadata?select=*&limit=1000'))return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
+    if(target.includes('/rest/v1/catalogue_product_metadata?select=*&order=product_id'))return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
     if(target.includes('/rest/v1/catalogue_product_metadata?on_conflict=product_id')){
       const body=JSON.parse(options.body);
       return new Response(JSON.stringify(body),{status:201,headers:{'Content-Type':'application/json'}});
@@ -150,7 +150,7 @@ test('admin catalogue export is authenticated and exports CSV',async()=>{
   });
   global.fetch=async(url)=>{
     if(String(url).endsWith('/auth/v1/user'))return new Response(JSON.stringify({id:'00000000-0000-4000-8000-000000000602'}),{status:200,headers:{'Content-Type':'application/json'}});
-    if(String(url).includes('/rest/v1/catalogue_product_metadata?select=*&limit=1000'))return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
+    if(String(url).includes('/rest/v1/catalogue_product_metadata?select=*&order=product_id'))return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
     throw new Error('Unexpected mocked fetch target.');
   };
   try{
@@ -160,7 +160,7 @@ test('admin catalogue export is authenticated and exports CSV',async()=>{
     });
     assert.equal(response.statusCode,200);
     assert.match(response.headers['Content-Type'],/text\/csv/);
-    assert.equal(parseCsv(response.body).length,984);
+    assert.equal(parseCsv(response.body).length,3541);
   }finally{
     global.fetch=originalFetch;
     for(const key of keys){

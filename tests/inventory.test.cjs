@@ -41,7 +41,7 @@ function configureMockFetch(fetcher,{authStatus=200}={}){
 }
 
 test('inventory movement validation accepts exact catalogue products and supported quantities',()=>{
-  assert.equal(catalogue.length,984);
+  assert.equal(catalogue.length,3541);
   assert.equal(movementTypes.length,8);
   const validated=validateMovement(movementPayload({quantity:-1,movement_type:'adjustment'}));
   assert.equal(validated.product.id,product.id);
@@ -89,7 +89,7 @@ test('inventory API exposes only catalogue balances to an authenticated admin',a
     });
     const body=JSON.parse(response.body);
     assert.equal(response.statusCode,200);
-    assert.equal(body.total,984);
+    assert.equal(body.total,3541);
     assert.equal(body.rows.find(row=>row.id===product.id).on_hand,6);
     assert.equal(body.rows.find(row=>row.id===product.id).reserved,2);
     assert.equal(body.rows.find(row=>row.id===product.id).purchase_price,undefined);

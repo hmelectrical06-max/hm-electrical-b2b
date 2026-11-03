@@ -7,7 +7,7 @@ exports.handler=c.safe(async e=>{
   if(view==='manpower')return c.reply(200,{ok:true,categories:await c.db('hm_manpower_categories?select=*&order=trade.asc'),requests:await c.db('hm_manpower_requests?select=id,trade,quantity,site_location,duration,contact_name,phone,email,required_date,details,status,created_at&order=created_at.desc&limit=100')});
   if(view==='audit')return c.reply(200,{ok:true,rows:await c.db('hm_audit_log?select=id,actor_user_id,action,entity_table,entity_id,changed_fields,created_at&order=id.desc&limit=100')});
   if(view==='services')return c.reply(200,{ok:true,rows:await c.db('hm_service_listings?select=*&order=service_id&limit=1000')});
-  if(view==='products')return c.reply(200,{ok:true,rows:await c.db('hm_catalogue_products?select=*&order=product_id&limit=1000')});
+  if(view==='products')return c.reply(200,{ok:true,rows:await require('../../server/live-catalogue.cjs').all('hm_catalogue_products?select=*&order=product_id')});
   c.fail(400,'Invalid admin view.');
  }
  if(e.httpMethod!=='PATCH')return c.reply(405,{ok:false});

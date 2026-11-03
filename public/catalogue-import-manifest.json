@@ -1,0 +1,11 @@
+{
+  "source": "Owner-supplied material catalogue",
+  "sourceSha256": "d365b6daab509ea6ac4ddebea3c803a43853c2d43d2b4d03896add04400ca853",
+  "originalProducts": 984,
+  "sourceRows": 2646,
+  "mergedExisting": 89,
+  "added": 2557,
+  "totalProducts": 3541,
+  "hsnVerification": "Owner-supplied reference only; GST rates not inferred",
+  "stockOrRatesImported": false
+}
