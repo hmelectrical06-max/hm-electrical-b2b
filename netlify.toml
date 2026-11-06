@@ -6,6 +6,18 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Existing static pages retain priority; newly added Admin materials use live HTML.
+[[redirects]]
+  from = "/products/*"
+  to = "/.netlify/functions/public-product-page?slug=:splat"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/live-products-sitemap.xml"
+  to = "/.netlify/functions/live-products-sitemap"
+  status = 200
+
 [functions]
   node_bundler = "esbuild"
   # PDFKit resolves its standard fonts inside its own package at runtime.

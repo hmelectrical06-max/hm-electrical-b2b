@@ -19,7 +19,7 @@ const illustrations={
  'Tools and Machinery':'../photos/illustrations/tools-and-machinery.svg',
  'Wires and Cables':'../photos/illustrations/wires-and-cables.svg'
 };
-function showLogin(){stopNotificationPolling();$('login').hidden=false;$('workspace').hidden=true;$('rows').replaceChildren();}
+function showLogin(){window.HM_DOWNLOADS?.clear();stopNotificationPolling();$('login').hidden=false;$('workspace').hidden=true;$('rows').replaceChildren();}
 function endpointUnavailable(){if(location.protocol==='file:')return'Admin API unavailable: this page was opened as a local file. Start the project with Netlify Dev and open its local HTTP URL (for example, http://localhost:8888/admin/). Static previews do not run Netlify Functions.';return'Admin API unavailable: the Netlify Function could not be reached. Confirm Netlify Dev is running and open the admin page through that same local site origin; a static file server does not provide /.netlify/functions/.';}
 async function api(name,options={}){let r;try{r=await fetch(endpoint+name,{credentials:'same-origin',cache:'no-store',...options});}catch{throw Error(endpointUnavailable());}if(r.status===401){showLogin();}if(!r.ok){let message='Request failed.';try{const type=r.headers.get('content-type')||'';if(type.includes('application/json')){const b=await r.json();message=b.message||message;}else if(r.status===404||r.status===403)message=endpointUnavailable();}catch{}throw Error(message);}return r;}
 const json=(method,data)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -471,11 +471,8 @@ async function changeQuotationStatus(quote,status){
 async function downloadQuotationPdf(id,revision=null){
   try{
     const query=new URLSearchParams({id});if(revision!==null)query.set('revision',String(revision));
-    const response=await api('admin-quotation-pdf?'+query),blob=await response.blob();
-    const url=URL.createObjectURL(blob),link=document.createElement('a');
-    link.href=url;link.download=response.headers.get('content-disposition')?.match(/filename="([^"]+)"/)?.[1]||'hm-quotation.pdf';
-    link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    $('quotationMessage').textContent='Quotation PDF downloaded. It is not a tax invoice; review before sharing.';
+    const response=await api('admin-quotation-pdf?'+query);await HM_DOWNLOADS.response(response,'hm-quotation.pdf');
+    $('quotationMessage').textContent='Quotation PDF ready. Use Save file above if saving did not start. It is not a tax invoice; review before sharing.';
   }catch(error){$('quotationMessage').textContent=error.message;}
 }
 function applyEnquiryToQuotation(){
@@ -571,9 +568,8 @@ async function recordInventoryMovement(event){
 async function exportCatalogueCsv(){
   const button=$('exportCatalogueCsv');button.disabled=true;
   try{
-    const response=await api('admin-catalogue?format=csv'),blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');
-    link.href=url;link.download='hm-catalogue-metadata.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    $('catalogueImportMessage').textContent='CSV export downloaded. Blank fields are intentionally unknown.';
+    const response=await api('admin-catalogue?format=csv');await HM_DOWNLOADS.response(response,'hm-catalogue-metadata.csv');
+    $('catalogueImportMessage').textContent='CSV export ready. Use Save file above if saving did not start. Blank fields are intentionally unknown.';
   }catch(error){$('catalogueImportMessage').textContent=error.message;}
   finally{button.disabled=false;}
 }
@@ -605,8 +601,8 @@ async function saveCatalogueImport(){
   finally{button.disabled=!pendingCatalogueCsv;}
 }
 function csvCell(value){const text=String(value??'');return '"'+(/^[\s]*[=+\-@]/.test(text)?"'":'')+text.replaceAll('"','""')+'"';}
-function downloadCsv(filename,rows){const content='\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n'),blob=new Blob([content],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-async function downloadEnquiries(format){const button=$(format);button.disabled=true;try{const p=params();p.set('format',format);const r=await api('admin-enquiries?'+p),blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hm-enquiries.'+(format==='csv'?'csv':'xml');a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('message').textContent='Export downloaded. Excel export uses Excel XML workbook format.';}catch(error){$('message').textContent=error.message;}finally{button.disabled=false;}}
+function downloadCsv(filename,rows){const content='\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');HM_DOWNLOADS.save(new Blob([content],{type:'text/csv;charset=utf-8'}),filename);}
+async function downloadEnquiries(format){const button=$(format);button.disabled=true;try{const p=params();p.set('format',format);const r=await api('admin-enquiries?'+p);await HM_DOWNLOADS.response(r,'hm-enquiries.'+(format==='csv'?'csv':'xml'));$('message').textContent='Export ready. Use Save file above if saving did not start. Excel export uses Excel XML workbook format.';}catch(error){$('message').textContent=error.message;}finally{button.disabled=false;}}
 let servicePage=0,serviceBusy=false,serviceTechnicians=[];
 const serviceStatuses=['New','Assigned','In Progress','Completed','Cancelled'],paymentStatuses=['Pending','Partially paid','Paid','Not applicable'],technicianAvailability=['Available','Busy','Unavailable'];
 function control(labelText,element){const label=document.createElement('label'),name=document.createElement('span');name.textContent=labelText;label.append(name,element);return label;}

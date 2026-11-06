@@ -94,7 +94,7 @@ module.exports=function generate(output){
  }
  // Crawlable paths remain available without JavaScript.
  for(const name of ['index.html','catalogue.html']){const file=path.join(output,name);fs.writeFileSync(file,fs.readFileSync(file,'utf8').replace('</footer>','<a href="/materials/">Browse categories and product specifications</a><a href="/hire-technicians-labour/">Hire technicians & labour in Mumbai and Thane</a></footer>'));}
- fs.writeFileSync(path.join(output,'robots.txt'),production?`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /.netlify/\nSitemap: ${domain}/sitemap.xml\n`:'User-agent: *\nDisallow: /\n');
+ fs.writeFileSync(path.join(output,'robots.txt'),production?`User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /.netlify/\nSitemap: ${domain}/sitemap.xml\nSitemap: ${domain}/live-products-sitemap.xml\n`:'User-agent: *\nDisallow: /\n');
  fs.writeFileSync(path.join(output,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls.map(u=>`<url><loc>${domain}${escape(u)}</loc></url>`).join('')+'</urlset>');
  const headers=fs.readFileSync(path.join(output,'_headers'),'utf8');fs.writeFileSync(path.join(output,'_headers'),headers+'\n/admin/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n'+(production?'':'/*\n  X-Robots-Tag: noindex, nofollow\n'));
  console.log(`SEO: ${products.length} product pages, ${groups.size} categories; ${production?'public launch mode':'private staging mode'}.`);

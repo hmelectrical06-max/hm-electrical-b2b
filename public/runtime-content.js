@@ -8,13 +8,13 @@
   if(window.HM_DATA&&Array.isArray(content.products)){
    const byId=new Map(content.products.map(p=>[p.id,p]));
    for(const p of window.HM_DATA.materials){const fresh=byId.get(p.id);if(fresh)Object.assign(p,fresh,{_seoPath:originalPaths.get(p.id)});}
-   const merged=content.products.map(fresh=>{const old=window.HM_DATA.materials.find(p=>p.id===fresh.id);return Object.assign(old||{},fresh,{_seoPath:originalPaths.get(fresh.id)||(fresh.id.startsWith('ADD-')?'/#materials':undefined)});});window.HM_DATA.materials.splice(0,window.HM_DATA.materials.length,...merged);
+   const merged=content.products.map(fresh=>{const old=window.HM_DATA.materials.find(p=>p.id===fresh.id);return Object.assign(old||{},fresh,{_seoPath:originalPaths.get(fresh.id)||fresh._seoPath||window.HM_CATALOGUE_SEARCH.productPath(fresh)});});window.HM_DATA.materials.splice(0,window.HM_DATA.materials.length,...merged);
    const services=new Map((content.services||[]).map(p=>[p.id,p]));for(const p of window.HM_DATA.services){const fresh=services.get(p.id);if(fresh)Object.assign(p,fresh);}
    if(typeof render==='function')render();if(typeof serviceRender==='function')serviceRender();if(typeof cascade==='function')cascade();
   }
   const productId=document.querySelector('[data-live-product]')?.dataset.liveProduct;
   const product=(content.products||[]).find(p=>p.id===productId);
-  if(product){const mount=document.querySelector('[data-live-product]'),photo=product.verifiedProductPhoto||'/photos/products/'+product.id+'.svg';
+  if(product){const mount=document.querySelector('[data-live-product]'),photo=product.verifiedProductPhoto||mount.dataset.fallbackPhoto||'/photos/products/'+product.id+'.svg';
    mount.innerHTML=`<figure style="max-width:440px;margin:24px 0"><img style="width:100%;height:auto" src="${esc(photo)}" alt="${esc(product.name+' '+product.size+(product.verifiedProductPhoto?' product photo':' representative illustration'))}"><figcaption>${product.verifiedProductPhoto?'Reference image; exact make and model may differ. <a href="/asset-policy.html#photo-sources">Image credits and permissions</a>':'Representative illustration. Confirm the exact make and model with our office.'}</figcaption></figure><p><strong>Availability:</strong> ${esc(product.availability==='discontinued'?'Contact us for an alternative':'Confirm availability with our office')}</p>`;
    const heading=document.querySelector('main h1');heading.textContent=product.name+' — '+product.size;
    const description=product.name+', '+product.size+', unit '+product.unit+'. Request make, availability and a quotation from HM ELECTRICAL for Mumbai and Thane.';
