@@ -32,7 +32,11 @@ test('staging and production SEO modes preserve public routes and exclude privat
     assert.match(html,/"@type":"BreadcrumbList"/,route);
     assert.doesNotMatch(html,/"(?:offers|aggregateRating|review|price|availability)"/i,route);
     assert.match(html,/MRP on request/,route);
-    assert.match(html,/Product-specific photograph is not available/,route);
+    if(/<img[^>]+src="https:[^"]+\/hm-product-photos\//.test(html)){
+     assert.match(html,/Reference image shows this product family/,route);
+     assert.match(html,/asset-policy\.html#photo-sources/,route);
+     assert.doesNotMatch(html,/Product-specific photograph is not available/,route);
+    }else assert.match(html,/Product-specific photograph is not available/,route);
     assert.match(html,/Product code/,route);
     assert.match(html,/Source catalogue code/,route);
     assert.match(html,/WhatsApp/,route);
@@ -83,7 +87,11 @@ test('staging and production SEO modes preserve public routes and exclude privat
     assert.match(html,/"@type":"BreadcrumbList"/,route);
     assert.doesNotMatch(html,/"(?:offers|aggregateRating|review|price|availability)"/i,route);
     assert.match(html,/MRP on request/,route);
-    assert.match(html,/Product-specific photograph is not available/,route);
+    if(/<img[^>]+src="https:[^"]+\/hm-product-photos\//.test(html)){
+     assert.match(html,/Reference image shows this product family/,route);
+     assert.match(html,/asset-policy\.html#photo-sources/,route);
+     assert.doesNotMatch(html,/Product-specific photograph is not available/,route);
+    }else assert.match(html,/Product-specific photograph is not available/,route);
     assert.match(html,/Product code/,route);
     assert.match(html,/Source catalogue code/,route);
     assert.match(html,/WhatsApp/,route);
