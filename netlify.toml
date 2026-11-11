@@ -62,3 +62,15 @@
     X-Robots-Tag = "noindex, nofollow"
     X-Frame-Options = "DENY"
     Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+
+[[redirects]]
+  from = "/photos/projects/site-23.jpeg"
+  to = "/unavailable-photo.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/photos/projects/site-27.jpeg"
+  to = "/unavailable-photo.html"
+  status = 404
+  force = true
