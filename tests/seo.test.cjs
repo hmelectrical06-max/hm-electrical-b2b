@@ -16,6 +16,20 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.equal([...sitemap.matchAll(/\/products\//g)].length,3541);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
+  const home=fs.readFileSync(path.join(output,'index.html'),'utf8');
+  const business=JSON.parse(home.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'][0];
+  assert.equal(business['@type'],'LocalBusiness');
+  assert.equal(business.address.streetAddress,'Shop No. 02, Ibrahim Hight, Mannat Banglow, Khardi Road');
+  assert.equal(business.address.postalCode,'421204');
+  assert.match(home,/<address>[^<]*Khardi Road/);
+  assert.match(require('../public/company.json').address,/Sion West/,'Registered billing address remains separate');
+  const plumber=fs.readFileSync(path.join(output,'hire-technicians-labour/plumber/index.html'),'utf8');
+  assert.match(plumber,/Leaking taps, pipe joints and water-supply lines/);
+  assert.match(plumber,/Charges depend on the fault, access, materials, quantity and work scope/);
+  assert.match(plumber,/Share the exact site location, required date and scope/);
+  const materials=fs.readFileSync(path.join(output,'materials/index.html'),'utf8');
+  assert.match(materials,/How to request material supply/);
+  assert.match(materials,/supplier rate, then confirms selling price, GST, delivery and payment terms/);
   for(const route of ['/company-profile.html','/privacy.html','/asset-policy.html']){
    assert.match(fs.readFileSync(path.join(output,route.slice(1)),'utf8'),/name="robots" content="noindex,nofollow"/);
    assert.ok(!sitemap.includes(`https://hmelectricalb2b.com${route}`),route);

@@ -6,5 +6,13 @@
   "email": "hmelectrical06@gmail.com",
   "gstin": "27BKYPA8983M1Z0",
   "udyam": "UDYAM-MH-19-0171369",
-  "address": "Ground Floor, A-85, Naik Nagar, Lal Bahadur Shastri Marg, near Sion Railway Station, Sion West, Mumbai, Maharashtra 400022, India"
+  "address": "Ground Floor, A-85, Naik Nagar, Lal Bahadur Shastri Marg, near Sion Railway Station, Sion West, Mumbai, Maharashtra 400022, India",
+  "operatingAddress": "Shop No. 02, Ibrahim Hight, Mannat Banglow, Khardi Road, Thane, Maharashtra 421204, India",
+  "operatingPostalAddress": {
+    "streetAddress": "Shop No. 02, Ibrahim Hight, Mannat Banglow, Khardi Road",
+    "addressLocality": "Thane",
+    "addressRegion": "Maharashtra",
+    "postalCode": "421204",
+    "addressCountry": "IN"
+  }
 }
