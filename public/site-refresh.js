@@ -1,7 +1,7 @@
 'use strict';
 {
- const register={...window.HM_PROJECTS,gallery:window.HM_PROJECTS.gallery.filter(photo=>!['site-27.jpeg'].includes(photo.src.split('/').pop()))}; let status='All';
- const featured=['site-04.jpeg','site-08.jpeg','site-19.jpeg','site-23.jpeg','site-12.jpeg','site-26.jpeg'];
+ const register={...window.HM_PROJECTS,gallery:window.HM_PROJECTS.gallery.filter(photo=>!['site-23.jpeg','site-27.jpeg'].includes(photo.src.split('/').pop()))}; let status='All';
+ const featured=['site-04.jpeg','site-08.jpeg','site-19.jpeg','site-12.jpeg','site-26.jpeg'];
  function setupHeader(){
   const header=document.querySelector('body > header'),nav=header?.querySelector('nav[aria-label="Main navigation"]');
   if(!header||!nav)return;
