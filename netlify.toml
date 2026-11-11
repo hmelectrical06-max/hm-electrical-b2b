@@ -6,6 +6,19 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Retired public offers redirect to current services; historical files stay intact.
+[[redirects]]
+  from = "/hire-technicians-labour/civil-labour/"
+  to = "/hire-technicians-labour/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/downloads/HM-ELECTRICAL-Company-Profile-2026-Public.pdf"
+  to = "/downloads/HM-ELECTRICAL-Company-Overview-2026.pdf"
+  status = 301
+  force = true
+
 # Existing static pages retain priority; newly added Admin materials use live HTML.
 [[redirects]]
   from = "/products/*"

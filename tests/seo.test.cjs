@@ -12,7 +12,7 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(fs.readFileSync(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex,nofollow/);
   const sitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3567);
   assert.equal([...sitemap.matchAll(/\/products\//g)].length,3541);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
@@ -23,6 +23,8 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.equal(business.address.postalCode,'421204');
   assert.match(home,/<address>[^<]*Khardi Road/);
   assert.match(require('../public/company.json').address,/Sion West/,'Registered billing address remains separate');
+  assert.ok(!sitemap.includes('/civil-labour/'));
+  assert.doesNotMatch(home,/civil work|civil labour/i);
   const plumber=fs.readFileSync(path.join(output,'hire-technicians-labour/plumber/index.html'),'utf8');
   assert.match(plumber,/Leaking taps, pipe joints and water-supply lines/);
   assert.match(plumber,/Charges depend on the fault, access, materials, quantity and work scope/);
@@ -72,7 +74,7 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(productionRobots,/Disallow: \/admin\//);
   assert.match(productionRobots,/Sitemap: https:\/\/hmelectricalb2b.com\/sitemap.xml/);
   const productionSitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3567);
   assert.equal([...productionSitemap.matchAll(/\/products\//g)].length,3541);
   assert.doesNotMatch(productionSitemap,/company-profile|privacy\.html|asset-policy|\/admin\//);
   assert.doesNotMatch(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex|PRIVATE REVIEW|hmelectricals\.com/);

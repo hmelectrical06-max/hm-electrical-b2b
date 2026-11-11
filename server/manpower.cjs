@@ -1,6 +1,6 @@
 'use strict';
 const c=require('./core.cjs');
-const trades=['Electrician','Plumber','Fire Fitter','Welder','Helper','Civil Labour','Supervisor'];
+const trades=['Electrician','Plumber','Fire Fitter','Welder','Helper','Supervisor'];
 const statuses=['New','Contacted','Quoted','Confirmed','Closed'];
 const text=(v,max,required=false,multiline=false)=>{const controls=multiline?/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/:/[\u0000-\u001f\u007f]/;if(typeof v!=='string'||v.length>max||controls.test(v)||(required&&!v.trim()))c.fail(400,'Please check the request fields and their length.');return v.trim();};
 function validate(p){

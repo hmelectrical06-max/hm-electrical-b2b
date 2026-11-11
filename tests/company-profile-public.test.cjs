@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const approved=require('../docs/company-profile-public.json');
 const overview=require('../docs/company-overview-public.json');
-test('website ships the exact approved public profile and no other PDF',()=>{
+test('current public overview is reviewed and historical profile bytes remain preserved',()=>{
  const pdfs=[];
  const walk=dir=>{for(const e of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,e.name);if(e.isDirectory())walk(f);else if(/\.pdf$/i.test(e.name))pdfs.push(path.relative('public',f).replaceAll('\\','/'));}};
  walk('public');assert.deepEqual(pdfs.sort(),[approved.file,overview.file].sort());
@@ -17,8 +17,10 @@ test('About Us and company profile expose separate View and Download actions',()
  assert.match(home,/id="company-profile"/);
  for(const html of [home,profile]){
   const links=[...html.matchAll(/<a\b[^>]*href="([^"]+\.pdf)"[^>]*>/g)].map(m=>m[0]);
-  assert.ok(links.some(a=>a.includes('/'+approved.file)&&a.includes('target="_blank"')));
-  assert.ok(links.some(a=>a.includes('/'+approved.file)&&a.includes(' download=')));
+  assert.ok(links.some(a=>a.includes('/'+overview.file)&&a.includes('target="_blank"')));
+  assert.ok(links.some(a=>a.includes('/'+overview.file)&&a.includes(' download=')));
  }
  assert.ok(!profile.includes('onclick='));
+ assert.doesNotMatch(profile,/civil work|civil labour/i);
+ assert.match(fs.readFileSync('netlify.toml','utf8'),/from = "\/downloads\/HM-ELECTRICAL-Company-Profile-2026-Public.pdf"\s+to = "\/downloads\/HM-ELECTRICAL-Company-Overview-2026.pdf"\s+status = 301\s+force = true/);
 });

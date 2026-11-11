@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const trades=['Electrician','Plumber','Fire Fitter','Welder','Helper','Civil Labour','Supervisor'];
+ const trades=['Electrician','Plumber','Fire Fitter','Welder','Helper','Supervisor'];
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let mounted=false,available=[],lastPayload='',requestId='',saved=false;
  function renderTrades(){const list=document.getElementById('tradeCards');if(!list)return;const query=document.getElementById('tradeSearch').value.trim().toLowerCase();const matches=available.filter(t=>(t.trade+' '+t.description).toLowerCase().includes(query));list.innerHTML=matches.map(t=>`<article class="trade-card"><span class="trade-icon" aria-hidden="true">${esc(t.trade.slice(0,2).toUpperCase())}</span><h3>${esc(t.trade)}</h3><p>${esc(t.description)}</p><span class="trade-availability">${t.availability==='available'&&t.available_count>0?esc(t.available_count+' available for enquiry'):t.availability==='fully_booked'?'Ask about upcoming availability':'Availability on request'}</span><button type="button" data-request-trade="${esc(t.trade)}">Request ${esc(t.trade)} <span aria-hidden="true">↗</span></button></article>`).join('')||'<p>No matching trade. Contact our office for your requirement.</p>';}
@@ -17,5 +17,5 @@
   form.addEventListener('submit',async event=>{event.preventDefault();if(saved)return;const p=Object.fromEntries(new FormData(form));p.quantity=Number(p.quantity);p.consent=form.elements.consent.checked;const fingerprint=JSON.stringify(p);if(fingerprint!==lastPayload){requestId=crypto.randomUUID();lastPayload=fingerprint;}p.requestId=requestId;const button=form.querySelector('button[type="submit"]'),status=document.getElementById('manpowerStatus');button.disabled=true;status.textContent='Saving your manpower request…';try{const r=await fetch('/.netlify/functions/manpower-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p),signal:AbortSignal.timeout(30000)}),data=await r.json();if(!r.ok||data.ok!==true||!data.reference)throw Error(data.message||'No saved request was confirmed.');saved=true;status.textContent=data.message;}catch(error){status.textContent=(error.name==='TimeoutError'?'The server did not confirm storage in time.':error.message)+' Please retry the same request or contact our office.';}finally{button.disabled=saved;}});
   const mobile=document.createElement('div');mobile.className='dual-mobile-actions';mobile.innerHTML='<a href="#store">Material Supply</a><a href="#hire">Hire Technicians / Labour</a>';document.body.append(mobile);
  }
- document.addEventListener('hm:content',e=>{if(!e.detail.enabled)return;available=e.detail.manpower||[];mount();renderTrades();});
+ document.addEventListener('hm:content',e=>{if(!e.detail.enabled)return;available=(e.detail.manpower||[]).filter(t=>trades.includes(t.trade));mount();renderTrades();});
 })();

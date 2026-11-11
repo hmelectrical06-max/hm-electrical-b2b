@@ -8,7 +8,14 @@ test('manpower request validation rejects unsafe quantities, fields, dates and c
  assert.equal(m.validate({...payload(),details:'Electrical team\nTwo shifts'}).details,'Electrical team\nTwo shifts');
  assert.equal(m.validate(payload()).quantity,3);for(const patch of [{quantity:0},{quantity:501},{quantity:1.5},{trade:'Admin'},{requiredDate:'2026-02-31'},{requiredDate:'2020-01-01'},{consent:false},{website:'spam'},{phone:'hello'},{siteLocation:'x\nInjected'}])assert.throws(()=>m.validate({...payload(),...patch}));
 });
-test('seven public trade categories contain no employee identities',()=>{assert.deepEqual(m.trades,['Electrician','Plumber','Fire Fitter','Welder','Helper','Civil Labour','Supervisor']);});
+test('six current public trades exclude retired civil labour without deleting historical data',()=>{assert.deepEqual(m.trades,['Electrician','Plumber','Fire Fitter','Welder','Helper','Supervisor']);assert.throws(()=>m.validate({...payload(),trade:'Civil Labour'}));});
+
+test('public availability filters retired civil records without database writes',async()=>{
+ const before={...process.env},originalFetch=global.fetch,requests=[];
+ Object.assign(process.env,{SUPABASE_URL:'https://public-content.invalid',SUPABASE_SERVICE_ROLE_KEY:'test-only-key',HM_DUAL_SERVICE_ENABLED:'true'});
+ global.fetch=async(url,options={})=>{requests.push({url:String(url),method:options.method||'GET'});return new Response(JSON.stringify(String(url).includes('hm_manpower_categories')?[{trade:'Plumber',available_count:1},{trade:'Civil Labour',available_count:9}]:[{service_id:'SVC-P',enabled:true,data:{name:'Plumbing',category:'Plumbing'}},{service_id:'SVC-C',enabled:true,data:{name:'Civil work',category:'Civil'}}]));};
+ try{const handler=require('../netlify/functions/public-content.js').handler;const people=JSON.parse((await handler({httpMethod:'GET',queryStringParameters:{kind:'manpower'}})).body);assert.deepEqual(people.manpower.map(r=>r.trade),['Plumber']);const services=JSON.parse((await handler({httpMethod:'GET',queryStringParameters:{kind:'services'}})).body);assert.deepEqual(services.services.map(r=>r.id),['SVC-P']);assert.ok(requests.every(r=>r.method==='GET'));}finally{global.fetch=originalFetch;for(const key of Object.keys(process.env))if(!(key in before))delete process.env[key];Object.assign(process.env,before);}
+});
 
 test('pending manpower office notifications retry with a stable provider idempotency key',async()=>{
  const previous={...process.env},originalFetch=global.fetch,requests=[];

@@ -50,8 +50,7 @@
    ['Electrical HT / LT','Electrical','Cable laying, termination and electrical work scopes from the existing catalogue.'],
    ['Fire Fighting','Fire Fighting','Fire-fighting work items available for project enquiry.'],
    ['Plumbing / PHE','Plumbing / PHE','Plumbing and public health engineering work items available for enquiry.'],
-   ['HVAC','HVAC','Share the drawings, site and scope for an individual review.'],
-   ['Civil labour services','Civil','Discuss labour-only scope, location and programme for review.']
+   ['HVAC','HVAC','Share the drawings, site and scope for an individual review.']
   ];
   const section=document.createElement('section');
   section.id='contracting-lanes';section.className='contracting-lanes';
