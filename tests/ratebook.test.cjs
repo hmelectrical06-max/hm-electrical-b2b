@@ -1,6 +1,15 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{JSDOM}=require('jsdom');
 const r=require('../server/ratebook.cjs');
+test('customer rate uses an explicit owner markup on buying cost with no automatic margin',()=>{
+ assert.equal(r.sellingRate(r.net(1000,65),20),420);
+ assert.equal(r.sellingRate(100,18),118);
+ assert.equal(r.sellingRate(100,0),100);
+ assert.equal(r.sellingRate(155.10,12.5),174.49);
+ for(const value of ['',undefined,null,-1,1000.01,true])assert.throws(()=>r.sellingRate(100,value));
+ const row={printed_mrp:1000,brand:'Ajay',supplier_id:'s',discount_rule_id:'r'};
+ assert.equal(r.decorate(row,[{id:'r',supplier_id:'s',brand:'Ajay',discount_percent:45}]).indicative_selling_floor,null);
+});
 test('MRP discounts and minimum 18 percent selling margin use independent exact rules',()=>{
  assert.equal(r.net(1000,65),350);assert.equal(r.net(1000,51),490);assert.equal(r.net(1000,42),580);assert.equal(r.net(1000,45),550);
  assert.equal(r.sellingFloor(100,18),121.96);assert.equal(r.sellingFloor(350,18),426.83);
@@ -38,6 +47,6 @@ test('private ratebook renders one parent item with two make references and gate
  w.api=async name=>({json:async()=>name.includes('rules=1')?{rules,suppliers:[{id:'supplier',company_name:'Supplier'}]}:{rules,rows:[{id:'one',material_id:'material',material,brand:'Ajay',supplier:{company_name:'Supplier'},printed_mrp:282,discounted_mrp:155.1,discount_percent:45,review_status:'Verified reference',quote_ready:true},{id:'two',material_id:'material',material,brand:'Supreme',supplier:{company_name:'Supplier'},printed_mrp:212,discounted_mrp:122.96,discount_percent:42,review_status:'Needs review',quote_ready:false}],more:false}});
  w.eval(fs.readFileSync('public/admin/admin-ratebook.js','utf8'));w.document.querySelector('[data-ratebook]').click();await new Promise(resolve=>setImmediate(resolve));
  assert.equal(w.document.querySelectorAll('.ratebook-material').length,1);assert.equal(w.document.querySelectorAll('[data-calculate]').length,2);assert.equal(w.document.querySelector('[data-calculate="two"]').disabled,true);
- w.document.querySelector('[data-calculate="one"]').click();assert.equal(w.document.querySelector('[name="margin"]').value,'18');assert.equal(w.document.querySelector('[name="landed_cost"]').value,'');
+ w.document.querySelector('[data-calculate="one"]').click();assert.equal(w.document.querySelector('[name="markup"]').value,'');assert.equal(w.document.querySelector('[name="landed_cost"]').value,'');
  dom.window.close();
 });

@@ -6,6 +6,7 @@
  async function refresh(){if(busy||document.hidden)return;busy=true;try{
   const response=await fetch('/.netlify/functions/public-content',{cache:'no-store',signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('Content unavailable');const content=await response.json();if(content.ok!==true)throw Error('Content unavailable');latest=content;window.HM_LIVE_CONTENT=content;
   if(window.HM_DATA&&Array.isArray(content.products)){
+   for(const p of document.querySelectorAll('p'))if(/Choose from [\d,]+ material specifications/.test(p.textContent))p.textContent=p.textContent.replace(/Choose from [\d,]+ material specifications/,'Choose from '+content.products.length.toLocaleString('en-IN')+' material specifications');
    const byId=new Map(content.products.map(p=>[p.id,p]));
    for(const p of window.HM_DATA.materials){const fresh=byId.get(p.id);if(fresh)Object.assign(p,fresh,{_seoPath:originalPaths.get(p.id)});}
    const merged=content.products.map(fresh=>{const old=window.HM_DATA.materials.find(p=>p.id===fresh.id);return Object.assign(old||{},fresh,{_seoPath:originalPaths.get(fresh.id)||fresh._seoPath||window.HM_CATALOGUE_SEARCH.productPath(fresh)});});window.HM_DATA.materials.splice(0,window.HM_DATA.materials.length,...merged);

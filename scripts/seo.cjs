@@ -6,8 +6,9 @@ const localSearch=require('./local-search-content.cjs');
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const hasNoindex=html=>[...html.matchAll(/<meta\s+name=["']robots["'][^>]*>/gi)].some(([tag])=>/\bnoindex\b/i.test(tag));
-const publicEntryPages=new Set(['index.html','catalogue.html']);
+const publicEntryPages=new Set(['index.html','catalogue.html','company-profile.html']);
 const legacyDescriptions={
+ 'company-profile.html':'About HM ELECTRICAL: registered in Sion, operating from Khardi Road, Mumbra. Electrical and plumbing material supply and skilled technicians across Mumbai, Mumbra and Thane.',
  'catalogue.html':'Browse HM ELECTRICAL product specifications by category, product code, size and unit. Add materials to an enquiry and request a confirmed quotation.',
  'tools.html':'Browse the HM ELECTRICAL tools catalogue and ask our Mumbai team to confirm exact makes, specifications, availability and quotation details.'
 };
@@ -39,7 +40,7 @@ module.exports=function generate(output){
    if(!/<meta\s+name=["']description["']/i.test(html))html=html.replace(/<html[^>]*>/i,match=>match+description);
   }
   if(entry.name==='index.html'){
-   html=html.replace('<b>984</b><span>Material<br>specifications','<b>'+products.length.toLocaleString('en-IN')+'</b><span>Material<br>specifications').replace('browse all 984 materials here','browse all '+products.length.toLocaleString('en-IN')+' materials here');
+   html=html.replace('<b>984</b><span>Material<br>specifications','<b>'+products.length.toLocaleString('en-IN')+'</b><span>Material<br>specifications').replace('browse all 984 materials here','browse all '+products.length.toLocaleString('en-IN')+' materials here').replace(/Choose from [\d,]+ material specifications/g,'Choose from '+products.length.toLocaleString('en-IN')+' material specifications');
    const title='HM ELECTRICAL B2B | Materials & Manpower in Mumbai & Mumbra';
    const description='HM ELECTRICAL supplies electrical materials, cables, MCBs, switches, fire fighting and plumbing materials. Request electricians, plumbers and site labour in Mumbai and Mumbra, Thane.';
    html=html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${title}</title>`).replace(/<meta name="description"[^>]*>/i,`<meta name="description" content="${description}">`);

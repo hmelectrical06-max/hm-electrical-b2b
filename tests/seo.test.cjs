@@ -12,7 +12,7 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(fs.readFileSync(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex,nofollow/);
   const sitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3567);
+  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3568);
   assert.equal([...sitemap.matchAll(/\/products\//g)].length,3541);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
@@ -32,7 +32,7 @@ test('staging and production SEO modes preserve public routes and exclude privat
   const materials=fs.readFileSync(path.join(output,'materials/index.html'),'utf8');
   assert.match(materials,/How to request material supply/);
   assert.match(materials,/supplier rate, then confirms selling price, GST, delivery and payment terms/);
-  for(const route of ['/company-profile.html','/privacy.html','/asset-policy.html']){
+  for(const route of ['/privacy.html','/asset-policy.html']){
    assert.match(fs.readFileSync(path.join(output,route.slice(1)),'utf8'),/name="robots" content="noindex,nofollow"/);
    assert.ok(!sitemap.includes(`https://hmelectricalb2b.com${route}`),route);
   }
@@ -74,15 +74,18 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(productionRobots,/Disallow: \/admin\//);
   assert.match(productionRobots,/Sitemap: https:\/\/hmelectricalb2b.com\/sitemap.xml/);
   const productionSitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3567);
+  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3568);
   assert.equal([...productionSitemap.matchAll(/\/products\//g)].length,3541);
-  assert.doesNotMatch(productionSitemap,/company-profile|privacy\.html|asset-policy|\/admin\//);
+  assert.doesNotMatch(productionSitemap,/privacy\.html|asset-policy|\/admin\//);
+  assert.ok(productionSitemap.includes('/company-profile.html'));
+  assert.match(fs.readFileSync(path.join(output,'company-profile.html'),'utf8'),/name="robots" content="index,follow"/);
+  assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/Choose from 3,541 material specifications/);
   assert.doesNotMatch(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex|PRIVATE REVIEW|hmelectricals\.com/);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="robots" content="index,follow"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="robots" content="index,follow"/);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
-  for(const route of ['/company-profile.html','/privacy.html','/asset-policy.html']){
+  for(const route of ['/privacy.html','/asset-policy.html']){
    assert.match(fs.readFileSync(path.join(output,route.slice(1)),'utf8'),/name="robots" content="noindex,nofollow"/);
   }
   assert.match(fs.readFileSync(path.join(output,'admin/index.html'),'utf8'),/noindex/);

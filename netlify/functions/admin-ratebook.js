@@ -19,14 +19,14 @@ exports.handler=c.safe(async e=>{
  }
  if(e.httpMethod!=='POST')return c.reply(405,{ok:false});c.origin(e);const p=c.body(e,8000),stamp={updated_by:user.id,updated_at:new Date().toISOString()};
  if(p.action==='calculate'){
-  const selling_floor=r.sellingFloor(p.landed_cost,p.margin),margin=r.number(p.margin,99.99);
+  const selling_floor=r.sellingRate(p.landed_cost,p.markup),markup=r.number(p.markup,1000);
   if(p.save===true){
    if(p.confirmed!==true)c.fail(400,'Confirm the supplier cost, tax basis and unit first.');
    const id=r.uuid(p.id),row=one(await c.db('hm_supplier_price_rows?id=eq.'+id+'&select=*')),rules=await c.db('hm_supplier_discount_rules?id=eq.'+r.uuid(row.discount_rule_id)+'&select=*');
    if(!r.decorate(row,rules).quote_ready)c.fail(400,'Review the source row and confirm its supplier discount before saving a selling rate.');
-   await c.db('hm_supplier_price_rows?id=eq.'+id,'PATCH',{source_details:{...row.source_details,pricing_plan:{landed_cost:r.number(p.landed_cost,99999999999,true),margin,selling_floor,confirmed_at:stamp.updated_at}},...stamp});
+   await c.db('hm_supplier_price_rows?id=eq.'+id,'PATCH',{source_details:{...row.source_details,pricing_plan:{landed_cost:r.number(p.landed_cost,99999999999,true),markup,pricing_method:'cost_markup',selling_floor,confirmed_at:stamp.updated_at}},...stamp});
   }
-  return c.reply(200,{ok:true,selling_floor,margin,message:p.save===true?'Private customer selling-rate plan saved. A later MRP, discount or specification change requires reconfirmation.':'Minimum selling rate before output GST. Recheck final landed cost and quantity before issuing a quotation.'});
+  return c.reply(200,{ok:true,selling_floor,markup,message:p.save===true?'Private customer selling-rate plan saved. A later MRP, discount or specification change requires reconfirmation.':'Customer rate uses your selected extra percentage on landed cost. Recheck tax basis and quantity before issuing a quotation.'});
  }
  if(p.action==='material'){
   const id=r.uuid(p.id),name=r.text(p.name,250,true),specification=r.text(p.specification||'',500),unit=p.unit;
