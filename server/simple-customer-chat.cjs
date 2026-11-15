@@ -11,11 +11,12 @@ async function answer(messages){
  const previouslyAsked=messages.some(m=>m.role==='assistant'&&m.content===SERVICE);
  const explicitService=/\b(plumbers?|electricians?|technicians?|labou?r|helpers?|workers?|manpower|fitters?|welders?|riggers?|supervisors?)\b/i.test(last);
  let refs=[];
- const materialHistory=messages.some(m=>m.role==='assistant'&&m.content.includes('MRP references:'))||!users.some(s=>a.topic(s).endsWith('-work'));
- const query=materialHistory?users.join(' '):last;
+ const materialIndex=users.findLastIndex(s=>a.topic(s).endsWith('-material')),serviceIndex=users.findLastIndex(s=>a.topic(s).endsWith('-work'));
+ const materialHistory=materialIndex>serviceIndex||messages.at(-2)?.content.includes('MRP references:')||serviceIndex<0;
+ const query=materialHistory?users.slice(Math.max(0,materialIndex)).join(' '):last;
  if(!explicitService)try{refs=await mrp.references(query);}catch{}
  if(refs.length)return {step:'price',reply:mrp.text(refs,{max:500})+'\n'+materialQuestion(messages),products:[],mrpReferences:refs,handoff:specifications(messages).size&&specifications(messages).qty};
- const service=kind.endsWith('-work')||previouslyAsked||(!materialHistory&&users.some(s=>a.topic(s).endsWith('-work'))&&kind==='unclear');
+ const service=kind.endsWith('-work')||(!materialHistory&&previouslyAsked)||(!materialHistory&&users.some(s=>a.topic(s).endsWith('-work'))&&kind==='unclear');
  if(service){const detailed=workDetail(last)||(previouslyAsked&&!/^(?:\d+\s*)?(?:plumbers?|electricians?|labou?r|helpers?|technicians?)(?:\s+(?:chahiye|needed|required))?[.! ]*$/i.test(last.trim()));return {step:detailed?'handoff':'work',reply:detailed?HANDOFF:SERVICE,products:[],handoff:detailed};}
  // A product name is enough: show the available makes/sizes, without forcing a questionnaire.
  if(kind.endsWith('-material')||materialHistory&&users.some(s=>a.topic(s).endsWith('-material'))||/\b(rate|mrp|price|material|item)\b/i.test(last))return {step:'handoff',reply:'Is item ka verified MRP abhi available nahi hai. '+materialQuestion(messages)+' “Send enquiry to HM ELECTRICAL” se contact bhej dijiye; hamari team rate batayegi.',products:[],mrpReferences:[],handoff:true};
