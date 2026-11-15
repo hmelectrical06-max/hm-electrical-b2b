@@ -2,7 +2,7 @@
 const c=require('./core.cjs');
 let cache,expires=0;
 const normal=s=>String(s||'').toLowerCase().replace(/ashirwad/g,'ashirvad').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9.]+/g,' ').trim();
-const STOP=new Set('price prices rate rates mrp cost discount final kya hai ka ki ke mujhe chahiye batao please tell me what is the a an for of in do you have need want kitna material metre metres meter meters pcs nos mm cm inch inches mtr x'.split(' '));
+const STOP=new Set('required needed supply quote quotation price prices rate rates mrp cost discount final kya hai ka ki ke mujhe chahiye batao please tell me what is the a an for of in do you have need want kitna material metre metres meter meters pcs nos mm cm inch inches mtr x'.split(' '));
 function sizes(s){
  const value=String(s).toLowerCase().replace(/[×]/g,'x').replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4');
  const metric=value.match(/((?:\d+(?:\.\d+)?\s*x\s*)*\d+(?:\.\d+)?)\s*(mm|cm)\b/);
