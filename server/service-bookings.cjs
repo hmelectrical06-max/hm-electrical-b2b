@@ -54,7 +54,9 @@ function validateBooking(payload,now=Date.now()){
   const preferredAt=text(payload.preferredAt,30,'Choose a preferred date and time.');
   const timestamp=Date.parse(preferredAt);
   if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(preferredAt)||!Number.isFinite(timestamp)||new Date(timestamp).toISOString()!==preferredAt||timestamp<now+4*60*1000)invalid('Choose a preferred date and time at least five minutes from now, then submit again.');
-  return {name,mobile,category,description,area,address,preferredAt,photo:validatePhoto(payload.photo)};
+  const email=String(payload.email||'').trim();
+  if(email&&!require('./customer-replies.cjs').validEmail(email))invalid('Enter a valid email for your enquiry confirmation.');
+  return {name,mobile,category,description,area,address,preferredAt,photo:validatePhoto(payload.photo),...(email?{email}:{})};
 }
 function validateTechnician(payload){
   if(!payload||typeof payload!=='object')invalid('Please check the technician details and try again.');

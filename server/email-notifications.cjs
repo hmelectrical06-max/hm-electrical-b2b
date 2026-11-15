@@ -73,7 +73,7 @@ function formatBookingEmail(booking,reference,createdAt){
   ].join('\n');
 }
 
-async function sendOfficeEmail({idempotencyKey,subject,text}){
+async function sendEmail({to,idempotencyKey,subject,text,replyTo}){
   const sender=validateSender(c.env('EMAIL_FROM'));
   const apiKey=c.env('HM_EMAIL_PROVIDER_TOKEN');
   const response=await fetch('https://api.resend.com/emails',{
@@ -83,7 +83,7 @@ async function sendOfficeEmail({idempotencyKey,subject,text}){
       'Content-Type':'application/json',
       'Idempotency-Key':idempotencyKey
     },
-    body:JSON.stringify({from:sender,to:[c.company.email],subject,text}),
+    body:JSON.stringify({from:sender,to:[to],subject,text,...(replyTo?{reply_to:replyTo}:{})}),
     signal:AbortSignal.timeout(5000)
   });
   if(!response.ok)throw new Error(emailErrorCode(response.status));
@@ -92,4 +92,9 @@ async function sendOfficeEmail({idempotencyKey,subject,text}){
   return result.id;
 }
 
-module.exports={formatDateTime,formatEnquiryEmail,formatBookingEmail,sendOfficeEmail,emailErrorCode,validateSender,emailFailureCode};
+const sendOfficeEmail=p=>sendEmail({...p,to:c.company.email});
+async function sendCustomerEmail(p){
+ if(!require('./customer-replies.cjs').validEmail(p.to))throw Error('CUSTOMER_EMAIL_INVALID');
+ return sendEmail({...p,replyTo:c.company.email});
+}
+module.exports={formatDateTime,formatEnquiryEmail,formatBookingEmail,sendOfficeEmail,sendCustomerEmail,emailErrorCode,validateSender,emailFailureCode};

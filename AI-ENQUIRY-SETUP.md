@@ -53,3 +53,13 @@ With the runtime connection above, OpenAI selects the next missing enquiry quest
 
 Justdial external replies and WhatsApp owner alerts on 8085560156 remain disconnected pending supported API/CRM and messaging credentials. Never reuse Groww trading tokens for AI. Do not use the proprietor's personal OpenAI account for this business integration.
 
+# Customer email confirmations (15 November 2026)
+
+The owner authorizes transactional acknowledgement and work/material clarification for electrical/plumbing enquiries. Final selling prices, service charges, technician availability and dispatch remain owner-confirmed. This does not authorize promotions or unrelated customer messages.
+
+`HM_CUSTOMER_EMAIL_ENABLED=true` and `HM_CUSTOMER_EMAIL_START_AT` enable confirmation email for new, consented website enquiries with an email address. All three intake forms are supported; the service booking form now has an optional email field. The existing five-minute `notify` schedule prepares/retries confirmations. `hm_customer_replies` is a private, immutable-payload outbox with one message per source enquiry, a ten-minute claim lease, six attempts, three acknowledgements per recipient/day and fifty/day globally. Retries expire at 22 hours, before Resend's 24-hour idempotency window, and become manual-review items. Existing accepted messages are not replayed. Historic enquiries are not bulk emailed. Only a specifically authorized current enquiry may be queued as a catch-up.
+
+Customer emails start with Hi, repeat their request, ask actual work/material specifications, exact location and timing, and request their confirmation. Email `Reply-To` is the business inbox: **email replies are for office review, not an unattended AI email conversation**. Interactive AI remains on the website chat linked in the email. WhatsApp/SMS and Justdial outgoing messages are still not connected.
+
+Public website chat may disclose verified **printed MRP references only**, matched to make, material family, size/grade/length or exact manufacturer SKU. It does not infer buying price from discounts. The public response uses a narrow whitelist and never returns supplier IDs, source documents, discounts, landed cost or margin. Missing/ambiguous references ask for specifications instead of inventing a rate. MRP references are dated list values, not stock, latest-market-price or final quotation promises. Service prices always require office review.
+

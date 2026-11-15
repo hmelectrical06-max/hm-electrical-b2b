@@ -41,6 +41,9 @@ exports.handler=c.safe(async e=>{
       console.error(`[enquiry] Office email pending for ${row.id}; the scheduled retry remains available. ${emailFailureCode(error)}`);
     }
   }
+  if(require('../../server/customer-replies.cjs').enabled())try{
+    const saved=await c.db('enquiries?id=eq.'+row.id+'&select=*');if(saved.length===1)await require('../../server/customer-replies.cjs').queueSafely('website',saved[0]);
+  }catch{console.error('[enquiry] Customer confirmation remains queued for scheduled recovery.');}
   return c.reply(200,{
     ok:true,
     reference:row.id,

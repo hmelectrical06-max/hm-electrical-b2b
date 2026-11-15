@@ -1,0 +1,7 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),m=require('../server/customer-mrp.cjs');
+const row={brand:'Ashirvad',printed_mrp:390,manufacturer_sku:'70009386',effective_date:'2026-08-01',review_status:'Verified reference',material:{name:'CPVC Plumbing Pipe SDR 11 (Class 1) 3 mtr',specification:'1.5 cm / 1/2 inch',unit:'Nos'},supplier_id:'private',discount_percent:65,purchase_price:136.5};
+test('MRP is matched by make, pipe family, dimension and grade; alternate makes and buying prices never leak',()=>{
+ let refs=m.select('Ashirwad CPVC pipe 15mm SDR 11 MRP',[row,{...row,brand:'Supreme',printed_mrp:999},{...row,review_status:'Needs review',printed_mrp:1}]);assert.equal(refs.length,1);assert.equal(refs[0].mrp,390);assert.doesNotMatch(JSON.stringify(refs),/private|discount|purchase|136.5/);assert.match(m.text(refs),/MRP reference only/);assert.match(m.text(refs),/final selling rates/);assert.ok(m.text(refs).length<=650);
+ assert.equal(m.select('Ashirvad UPVC pipe 15mm MRP',[row]).length,0);assert.equal(m.select('Ashirvad CPVC pipe 25mm MRP',[row]).length,0);assert.equal(m.select('Ashirvad CPVC pipe SDR 13.5 MRP',[row]).length,0);assert.equal(m.select('CPVC pipe rate',[row]).length,0);assert.equal(m.select('70009386 MRP',[row]).length,1);assert.equal(m.select('Ashirvad CPVC pipe 1/2 inch MRP',[row]).length,1);assert.equal(m.select('Ashirvad CPVC pipe 6 inch MRP',[row]).length,0);assert.equal(m.select('Ashirvad CPVC pipe 15mm 6mtr MRP',[row]).length,0);
+});

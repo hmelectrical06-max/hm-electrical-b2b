@@ -59,5 +59,7 @@ exports.handler=async()=>{
       manpowerAccepted++;
     }catch(error){console.error(`[notify] Manpower email pending for ${row.id}. ${emailFailureCode(error)}`);}
   }catch(error){console.error(`[notify] Manpower retry queue unavailable. ${emailFailureCode(error)}`);}
-  return {statusCode:200,body:JSON.stringify({enquiriesAccepted,bookingsAccepted,...(process.env.HM_DUAL_SERVICE_ENABLED==='true'?{manpowerAccepted}:{})})};
+  let customerRepliesAccepted=0;
+  try{customerRepliesAccepted=(await require('../../server/customer-replies.cjs').sweep()).accepted;}catch{console.error('[notify] Customer confirmation retry queue unavailable.');}
+  return {statusCode:200,body:JSON.stringify({enquiriesAccepted,bookingsAccepted,customerRepliesAccepted,...(process.env.HM_DUAL_SERVICE_ENABLED==='true'?{manpowerAccepted}:{})})};
 };

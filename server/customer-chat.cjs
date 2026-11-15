@@ -22,7 +22,7 @@ function history(input){
 function fallback(messages){
  const users=messages.filter(m=>m.role==='user').map(m=>m.content).join(' '),last=messages.at(-1).content,kind=a.topic(users);
  if(a.topic(last)==='outside')return 'outside';
- if(/\b(price|rate|cost|discount|kitna|charge)\b/i.test(last))return 'price';
+ if(/\b(price|rate|mrp|cost|discount|kitna|charge)\b/i.test(last))return 'price';
  if(kind==='unclear')return 'scope';
  if(kind==='outside')return 'outside';
  const location=/\b(mumbai|mumbra|thane|sion|borivali|kurla|andheri|bandra|navi mumbai|turbhe|khardi|dadar|worli|worali|powai|kalyan|dombivli|bhiwandi|panvel|vashi|mulund)\b/i.test(users);
@@ -44,6 +44,7 @@ async function nextStep(messages,{key,fetcher=fetch}={}){
 function refineStep(step,messages){
  const users=messages.filter(m=>m.role==='user').map(m=>m.content).join(' ');
  const next=fallback(messages);
+ if(next==='price')return 'price';
  if(a.topic(users).endsWith('-work')){
   if(step==='work'&&/leak|tripp|sparking|short circuit|blocked|blockage|rewiring|wiring|installation|switch replace|fan repair|tap replace/i.test(users))return next;
   if(step==='location'&&['date','handoff'].includes(next))return next;

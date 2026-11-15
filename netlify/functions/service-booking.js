@@ -37,7 +37,7 @@ exports.handler=c.safe(async event=>{
       id,reference,customer_name:booking.name,mobile:booking.mobile,category:booking.category,
       description:booking.description,area:booking.area,address:booking.address,
       preferred_at:booking.preferredAt,status:'New',payment_status:'Pending',photo_path:photoPath,
-      email_status:'pending'
+      email_status:'pending',...(booking.email?{email:booking.email}:{})
     });
     if(!Array.isArray(rows)||rows.length!==1||rows[0].id!==id)c.fail(503,'The booking service did not confirm a saved request. Please retry.');
   }catch(error){
@@ -64,5 +64,6 @@ exports.handler=c.safe(async event=>{
   }catch(error){
     console.error(`[service-booking] Office email pending for ${reference}; booking remains saved. ${emailFailureCode(error)}`);
   }
+  await require('../../server/customer-replies.cjs').queueSafely('booking',{id,reference,customer_name:booking.name,email:booking.email,category:booking.category,description:booking.description,area:booking.area,preferred_at:booking.preferredAt,status:'New',created_at:createdAt});
   return c.reply(201,{ok:true,reference,message:`Booking request received. Reference: ${reference}. Our team will review it; your appointment is not confirmed until HM ELECTRICAL accepts it. No payment has been collected.`});
 });

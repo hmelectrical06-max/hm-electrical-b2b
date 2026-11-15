@@ -17,6 +17,11 @@ exports.handler=c.safe(async e=>{
    if(reserved===true){try{step=await chat.nextStep(messages,{key:process.env.OPENAI_API_KEY});mode='ai-chat';}catch{/* Safe guided chat remains available; the reserved attempt is not refunded. */}}
   }
   step=chat.refineStep(step,messages);
+  if(step==='price'){
+   const mrp=require('../../server/customer-mrp.cjs');let refs=[];
+   if(!a.topic(messages.filter(m=>m.role==='user').map(m=>m.content).join(' ')).endsWith('-work'))try{refs=await mrp.references(messages.filter(m=>m.role==='user').map(m=>m.content).join(' '));}catch{/* Missing catalogue evidence must never become a guessed price. */}
+   return c.reply(200,{ok:true,mode,step,reply:mrp.text(refs),handoff:false,products:[],mrpReferences:refs});
+  }
   return c.reply(200,{ok:true,mode,step,reply:chat.replyFor(step,messages),handoff:step==='handoff',products:[]});
  }
  if(typeof p.question!=='string'||!p.question.trim()||p.question.length>350)c.fail(400,'Enter a material or service requirement, up to 350 characters.');

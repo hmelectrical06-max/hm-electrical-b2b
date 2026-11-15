@@ -58,6 +58,7 @@
       const payload={
         name:document.getElementById('serviceName').value.trim(),
         mobile:document.getElementById('serviceMobile').value.trim(),
+        email:document.getElementById('serviceEmail')?.value.trim()||'',
         category:document.getElementById('serviceCategory').value,
         description:document.getElementById('serviceDescription').value.trim(),
         area:document.getElementById('serviceArea').value.trim(),

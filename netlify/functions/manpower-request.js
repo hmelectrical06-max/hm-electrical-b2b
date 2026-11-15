@@ -8,5 +8,6 @@ exports.handler=c.safe(async e=>{
  const row=rows?.[0];if(!row?.id)c.fail(503,'No saved manpower request was confirmed. Please retry with the same request.');
  if(row.fingerprint!==fingerprint)c.fail(409,'This request ID was already used for different details. Start a new request.');
  if(row.email_status!=='accepted')try{const id=await email.sendOfficeEmail({idempotencyKey:'hm-manpower-'+row.id,subject:'HM ELECTRICAL manpower request '+row.id,text:m.emailText(row)});await c.db('hm_manpower_requests?id=eq.'+row.id,'PATCH',{email_status:'accepted',email_provider_id:id});}catch(error){console.error('[manpower] Notification queued. '+email.emailFailureCode(error));}
- return c.reply(201,{ok:true,reference:row.id,message:'Manpower request saved. Reference: '+row.id+'. Availability, scope and rates will be confirmed by our office.'});
+ await require('../../server/customer-replies.cjs').queueSafely('manpower',row);
+ return c.reply(201,{ok:true,reference:row.id,message:'Manpower request saved. Reference: '+row.id+'. Availability, scope and rates will be confirmed by our office. If you supplied an email, check for our request to confirm the work details.'});
 });

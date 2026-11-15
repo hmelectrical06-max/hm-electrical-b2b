@@ -500,7 +500,7 @@ test('scheduled notifier retries pending service-booking email through mocks',as
   try{
     const response=await notifyFunction.handler();
     assert.equal(response.statusCode,200);
-    assert.deepEqual(JSON.parse(response.body),{enquiriesAccepted:0,bookingsAccepted:1});
+    assert.deepEqual(JSON.parse(response.body),{enquiriesAccepted:0,bookingsAccepted:1,customerRepliesAccepted:0});
     const emailRequest=requests.find(item=>item.target==='https://api.resend.com/emails');
     assert.equal(emailRequest.options.headers['Idempotency-Key'],'hm-service-00000000-0000-4000-8000-000000000401');
     const email=JSON.parse(emailRequest.options.body);
