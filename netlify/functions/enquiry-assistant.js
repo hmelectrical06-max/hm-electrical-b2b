@@ -8,7 +8,10 @@ exports.handler=c.safe(async e=>{
   let messages;try{messages=chat.history(p.messages);}catch(err){c.fail(400,err.message);}
   if(p.consent!==true)c.fail(400,'Please agree to the chat processing notice.');
   let step=chat.fallback(messages),mode='guided-chat';
-  if(process.env.HM_CUSTOMER_AI_ENABLED==='true'&&process.env.OPENAI_API_KEY&&new Date()<new Date('2026-12-16T00:00:00+05:30')){
+  if(process.env.HM_CUSTOMER_AI_ENABLED==='true'&&process.env.HM_CUSTOMER_AI_VIA_SUPABASE==='true'){
+   if(typeof p.requestId!=='string'||! /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.requestId))c.fail(400,'Invalid chat request ID.');
+   try{step=await chat.edgeStep(messages,p.requestId,{url:c.env('SUPABASE_URL'),headers:c.serviceRoleHeaders()});mode='ai-chat';}catch{/* Runtime keeps its own atomic allowance; guided fallback sends nothing externally. */}
+  }else if(process.env.HM_CUSTOMER_AI_ENABLED==='true'&&process.env.OPENAI_API_KEY&&new Date()<new Date('2026-12-16T00:00:00+05:30')){
    if(typeof p.requestId!=='string'||! /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.requestId))c.fail(400,'Invalid chat request ID.');
    const reserved=await c.db('rpc/hm_ai_reserve','POST',{p_request:p.requestId});
    if(reserved===true){try{step=await chat.nextStep(messages,{key:process.env.OPENAI_API_KEY});mode='ai-chat';}catch{/* Safe guided chat remains available; the reserved attempt is not refunded. */}}

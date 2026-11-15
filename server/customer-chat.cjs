@@ -41,4 +41,8 @@ async function nextStep(messages,{key,fetcher=fetch}={}){
  const d=await r.json(),s=(d.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('');
  const result=JSON.parse(s);if(!Object.hasOwn(STEPS,result.step))throw Error('Invalid chat step');return result.step;
 }
-module.exports={STEPS,history,fallback,input,nextStep};
+async function edgeStep(messages,requestId,{url,headers,fetcher=fetch}){
+ const r=await fetcher(url+'/functions/v1/hm-enquiry-ai',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({messages,requestId}),signal:AbortSignal.timeout(24000)});
+ if(!r.ok)throw Error('Runtime AI unavailable');const d=await r.json();if(!Object.hasOwn(STEPS,d.step))throw Error('Invalid runtime step');return d.step;
+}
+module.exports={STEPS,history,fallback,input,nextStep,edgeStep};

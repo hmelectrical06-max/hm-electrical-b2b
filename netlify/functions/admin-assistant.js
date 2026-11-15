@@ -7,7 +7,7 @@ exports.handler=c.safe(async e=>{
  if(e.httpMethod==='GET'){
   const [web,external,drafts,budget]=await Promise.all([c.db('enquiries?select=id,name,phone,email,location,details,items,status,created_at&order=created_at.desc&limit=100'),c.db('hm_ai_external_leads?select=*&order=created_at.desc&limit=100'),c.db('hm_ai_drafts?select=*&order=created_at.desc&limit=100'),c.db('hm_ai_budget?month=eq.'+a.month()+'&select=reserved_inr,requests')]);
   const leads=[...web.map(p=>({...p,key:'website:'+p.id,source:'website'})),...external.map(p=>({...p,key:'external:'+p.id}))].sort((a,b)=>b.created_at.localeCompare(a.created_at));
-  return c.reply(200,{ok:true,leads,drafts,budget:{month:a.month(),limit:500,reserved:budget[0]?.reserved_inr||0,requests:budget[0]?.requests||0,maxRequests:100},connections:{website:true,customerAi:process.env.HM_CUSTOMER_AI_ENABLED==='true'&&!!process.env.OPENAI_API_KEY,justdial:process.env.HM_JD_WEBHOOK_ENABLED==='true'&&!!process.env.HM_JD_WEBHOOK_SECRET,ai:process.env.HM_AI_ENABLED==='true'&&!!process.env.OPENAI_API_KEY,automaticMessaging:false},mode:'drafts-only'});
+  return c.reply(200,{ok:true,leads,drafts,budget:{month:a.month(),limit:500,reserved:budget[0]?.reserved_inr||0,requests:budget[0]?.requests||0,maxRequests:100},connections:{website:true,customerAi:process.env.HM_CUSTOMER_AI_ENABLED==='true'&&(!!process.env.OPENAI_API_KEY||process.env.HM_CUSTOMER_AI_VIA_SUPABASE==='true'),justdial:process.env.HM_JD_WEBHOOK_ENABLED==='true'&&!!process.env.HM_JD_WEBHOOK_SECRET,ai:process.env.HM_AI_ENABLED==='true'&&!!process.env.OPENAI_API_KEY,automaticMessaging:false},mode:'drafts-only'});
  }
  if(e.httpMethod!=='POST')return c.reply(405,{ok:false});c.origin(e);const p=c.body(e,14000);
  if(p.action==='import'){

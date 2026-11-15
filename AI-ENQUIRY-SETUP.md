@@ -13,7 +13,7 @@ Owner-approved AI planning budget: maximum INR 500/month, confirmed 15 November 
 
 ## OpenAI connection (not activated by adding this code)
 
-Use a dedicated project/key and server-side Netlify Function environment variables `OPENAI_API_KEY` and `HM_AI_ENABLED=true`. Never save credentials in this repository, frontend, HTML, screenshots or chat. Account/billing/terms remain owner steps.
+The legacy Admin staff-note path uses `OPENAI_API_KEY` and `HM_AI_ENABLED`, but **must remain disabled on the current hosting plan**. Use the runtime-only customer chat connection below instead. Never save credentials in this repository, frontend, HTML, screenshots or chat. Account/billing/terms remain owner steps.
 
 Paid generation is Admin-only and produces a **private requirement-check note**, while customer reply stays deterministic and editable. GPT-4.1 mini snapshot, at most 12,000 request bytes and 500 output tokens; no tools, retries or stored provider response. A database lock reserves INR 5 allowance per attempt, at most 100 attempts per India calendar month. Failed attempts remain reserved; standard drafts remain free. INR 500 is the app planning limit, not a provider invoice guarantee: external key usage, FX/tax changes, hosting and messaging are outside it. Model prices verified 2026-11-15 at https://developers.openai.com/api/docs/models/gpt-4.1-mini ($0.40 input / $1.60 output per million). Paid analysis automatically stops for price review after 2026-12-15.
 
@@ -35,9 +35,21 @@ Owner must choose/authorise an official WhatsApp Business Platform connection, v
 Apply `database/enquiry-assistant.sql` as an additive production migration after tests. Run assistant security/functional tests and full build. Verify unauthenticated Admin denial, public response privacy, disabled Justdial hook, a standard draft in the authenticated workspace, and budget concurrency in an isolated DB. Do not send fake test leads to real customers. Record deployment ID and remaining external activation steps.
 # Direct website enquiry chat — 15 November 2026
 
+## Current hosting: runtime-only secret
+
+The Personal Netlify plan rejects functions-only scopes. Do **not** fall back to an OpenAI key in its default build/post-processing environment. Automatic approval review rejected that broader credential exposure. The local Netlify-key connector is retired.
+
+The supported route is the authenticated Supabase Edge Function `hm-enquiry-ai` in existing HM ELECTRICAL project `qftvchsrqaevkfkhbnrj`. Store the dedicated business OpenAI key only as the **Edge Function Secret `HM_OPENAI_API_KEY`** through the Supabase dashboard. The owner has approved this specific runtime destination. No OpenAI key is sent to Netlify, source files, build output, or the browser.
+
+After the runtime secret is saved and tested, set only non-secret Netlify production flags `HM_CUSTOMER_AI_ENABLED=true` and `HM_CUSTOMER_AI_VIA_SUPABASE=true`. Keep `HM_AI_ENABLED=false` for the separate legacy staff-note feature. Rebuild the server deployment and require a real `mode: ai-chat` test before claiming activation.
+
+The runtime authenticates the existing server key through the service_role-only `hm_ai_reserve` RPC, which atomically limits each request/month. Anonymous and authenticated browser roles have no execute grant. The API request ID is reused across the proxy so a request reserves allowance only once. `verify_jwt=false` is intentional for service-to-service secret keys; handler authorization is mandatory. The OpenAI key is accessible only inside the runtime, not in Netlify's build or post-processing environment.
+
+OpenAI billing was verified: $11.80 paid, $10 API credit, automatic recharge disabled. This is not a ₹500 monthly subscription. App allowance remains at most 100 attempts/month at ₹5 reserved per attempt, shared with verification attempts; actual provider billing is usage-based.
+
 The website widget now keeps a bounded conversation in page memory and transfers the customer's requirements into the existing enquiry form. It does not submit that form, contact a customer externally or confirm prices, stock, delivery or technician bookings. The existing enquiry form sends office email after submission.
 
-With `HM_CUSTOMER_AI_ENABLED=true` and a dedicated **hmelectrical06@gmail.com business-account** API key in server secrets, OpenAI selects the next missing enquiry question using a strict schema. Customer-facing text is a vetted question, never arbitrary model text. Each turn reserves one of the same 100 monthly ₹5 planning allowances. Without connection, allowance, or provider availability, the widget labels itself **Guided chat** and continues without paid calls. Price review remains due after 15 December 2026. This allowance excludes other usage on the same provider account and messaging/hosting charges.
+With the runtime connection above, OpenAI selects the next missing enquiry question using a strict schema. Customer-facing text is a vetted question, never arbitrary model text. Each turn reserves one of the same 100 monthly ₹5 planning allowances. Without connection, allowance, or provider availability, the widget labels itself **Guided chat** and continues without paid calls. Price review remains due after 15 December 2026. This allowance excludes other usage on the same provider account and messaging/hosting charges.
 
 Justdial external replies and WhatsApp owner alerts on 8085560156 remain disconnected pending supported API/CRM and messaging credentials. Never reuse Groww trading tokens for AI. Do not use the proprietor's personal OpenAI account for this business integration.
 
