@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),simple=require('../server/simple-customer-chat.cjs'),mrp=require('../server/customer-mrp.cjs');
 test('three plumbers get one short work question, then an office handoff without location/date questionnaires',async()=>{
  const first=await simple.answer([{role:'user',content:'3 PLUMBER'}]);assert.equal(first.step,'work');assert.match(first.reply,/manpower services/);assert.match(first.reply,/What work/);assert.doesNotMatch(first.reply,/landmark|location|duration|date|shift/i);
- const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:first.reply},{role:'user',content:'Bathroom tap fitting aur repair'}]);assert.equal(next.step,'handoff');assert.match(next.reply,/name and mobile/);assert.doesNotMatch(next.reply,/landmark|duration|date|shift/i);
+ const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:first.reply},{role:'user',content:'Bathroom tap fitting aur repair'}]);assert.equal(next.step,'handoff');assert.match(next.reply,/8085560156/);assert.match(next.reply,/hmelectrical06@gmail.com/);assert.doesNotMatch(next.reply,/landmark|duration|date|shift/i);
 });
 test('a plain item name immediately returns available make MRP and never requests a make first',async()=>{
  const old=mrp.references;mrp.references=async()=>[{brand:'Ashirvad',name:'CPVC Pipe SDR11 3m',size:'15 mm',unit:'Nos',mrp:390}];
@@ -26,3 +26,5 @@ test('available make examples preserve each actual size and omit supplier discou
 });
 
 test('public company keywords and common material aliases stay concise and exclude private data',()=>{assert.equal(simple.normalQuery('taar'),'wire');for(const q of ['company profile','projects','team']){const reply=simple.companyReply(q);assert.ok(reply.length<=650);assert.match(reply,/hmelectricalb2b.com/);assert.doesNotMatch(reply,/bank|salary|purchase_price|supplier_discount|aadhaar/i);}});
+
+test('confirmation and contact requests immediately share only the business phone and email without confirming an order',async()=>{for(const content of ['confirm order','please call','email address','aage baat karna hai']){const p=await simple.answer([{role:'user',content}]);assert.equal(p.step,'handoff');assert.match(p.reply,/8085560156/);assert.match(p.reply,/hmelectrical06@gmail.com/);assert.match(p.reply,/confirmed by our team/);assert.ok(p.reply.length<=650);}});

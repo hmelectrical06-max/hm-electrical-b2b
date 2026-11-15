@@ -1,10 +1,11 @@
 'use strict';
 const a=require('./enquiry-assistant.cjs'),mrp=require('./customer-mrp.cjs');
 const SERVICE='Hi! We provide electrician, plumber and site manpower services. What work do you need? Share a brief description and our team will assist you.';
-const HANDOFF='Thank you. Please select “Send enquiry to HM ELECTRICAL” and share your name and mobile number. Our team will contact you to confirm the work, availability and charges.';
+const CONTACT='Please call HM ELECTRICAL on 8085560156 or email hmelectrical06@gmail.com to confirm your requirement.';
+const HANDOFF='Thank you. '+CONTACT+' Our team will confirm availability and final charges. You can also send the enquiry form.';
 const workDetail=s=>/leak|tripp|sparking|blocked|blockage|rewiring|wiring|installation|install |replace|repair|cable lay|termination|welding|fabrication|unloading|fitting|cleaning|maintenance|kharab/i.test(s);
 function specifications(messages){const s=messages.filter(m=>m.role==='user').map(m=>m.content).join(' ');const size=/\d+(?:\.\d+)?\s*(?:mm|cm|inch|inches|sq\s*mm|sqmm|amp|a\b|watt|w\b)|\bM\d+\b/i.test(s),qty=/\d+(?:\.\d+)?\s*(?:pcs|pieces?|nos?|metres?|meters?|mtr|rolls?|boxes?|kg|litres?)\b/i.test(s);return {size,qty};}
-function materialQuestion(messages){const p=specifications(messages);return !p.size&&!p.qty?'What size and quantity do you need?':!p.size?'What size do you need?':!p.qty?'What quantity do you need (pcs/metres/box)?':'Size and quantity noted. Please send your contact details through the enquiry form; our team will confirm the final rate.';}
+function materialQuestion(messages){const p=specifications(messages);return !p.size&&!p.qty?'What size and quantity do you need?':!p.size?'What size do you need?':!p.qty?'What quantity do you need (pcs/metres/box)?':'Size and quantity noted. Please call 8085560156 or email hmelectrical06@gmail.com for the final rate.';}
 let cache,until=0;
 async function listed(query){
  if(!cache||Date.now()>until){cache=await require('./live-catalogue.cjs').products();until=Date.now()+120000;}
@@ -27,6 +28,7 @@ function companyReply(q){
 }
 async function answer(messages){
  const last=normalQuery(messages.at(-1).content),users=messages.filter(m=>m.role==='user').map(m=>normalQuery(m.content)),kind=a.topic(last);
+ if(/\b(confirm|confirmation|proceed|order|book|booking|call|phone|mobile|email|mail|contact|talk|speak)\b|baat|bat kar|aage|number|nomber/i.test(last))return {step:'handoff',reply:CONTACT+' Final rates, stock and service bookings are confirmed by our team.',products:[],handoff:true};
  const company=companyReply(last);if(company)return {step:'company',reply:company,products:[],handoff:false};
  if(kind==='outside')return {step:'outside',reply:'Hi, please share your electrical/plumbing material or technician/manpower requirement. Civil work is not offered.',products:[],handoff:false};
  const previouslyAsked=messages.some(m=>m.role==='assistant'&&m.content===SERVICE);
@@ -45,4 +47,4 @@ async function answer(messages){
  if(kind.endsWith('-material')||materialHistory&&users.some(s=>a.topic(s).endsWith('-material'))||/\b(rate|mrp|price|material|item)\b/i.test(last)){let known=false;try{known=await listed(query);}catch{}return {step:'handoff',reply:(known?'We can arrange supply of this material. Our team will discuss the rate with you. ':'Our team will check supply and confirm the rate for this material. ')+materialQuestion(messages),products:[],mrpReferences:[],handoff:true};}
  return {step:'scope',reply:'Hi! Which material or manpower service do you need?',products:[],handoff:false};
 }
-module.exports={normalQuery,companyReply,answer,SERVICE,HANDOFF,workDetail,specifications,materialQuestion};
+module.exports={CONTACT,normalQuery,companyReply,answer,SERVICE,HANDOFF,workDetail,specifications,materialQuestion};
