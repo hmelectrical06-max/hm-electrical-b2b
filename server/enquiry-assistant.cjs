@@ -1,6 +1,16 @@
 'use strict';
 const crypto=require('node:crypto');
 const CALLBACK='8085560156', MODEL='gpt-4.1-mini-2025-04-14';
+const POLICY=Object.freeze({scope:['Electrical materials','Electrical work','Plumbing materials and work'],ownerEmail:'hmelectrical06@gmail.com',ownerMobile:CALLBACK,mobileChannel:'whatsapp',mobileStatus:'connection-required',customerAutoSend:false});
+function topic(value){
+ const q=clean(value).toLowerCase();
+ if(/\b(civil|shutter\w*|reinforcement|pile|excavation|masonry|concrete|hvac|fire fighting|firefighting)\b/.test(q))return 'outside';
+ if(/\b(plumb\w*|leak\w*|tap|faucet|flush|drain\w*|water repair)\b/.test(q))return 'plumbing-work';
+ if(/\b(electrician|wiring|rewir\w*|electrical work|electrical repair|short circuit|power failure|fan repair|switch repair)\b/.test(q))return 'electrical-work';
+ if(/\b(cpvc|upvc|pvc|pipe\w*|fitting\w*|sanitary\w*|bathroom|valve\w*|elbow|tee|reducer|socket)\b/.test(q))return 'plumbing-material';
+ if(/\b(electrical|cable\w*|wire\w*|switch\w*|mcb|mccb|rcbo|rccb|light\w*|led|conduit|gland\w*|earthing|lug\w*|fan)\b/.test(q))return 'electrical-material';
+ return 'unclear';
+}
 function clean(value,max=2500){return String(value??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').trim().slice(0,max);}
 function normaliseLead(p,{webhook=false}={}){
  const name=clean(p.name||p.customer_name||p.NAME,120),details=clean(p.details||p.requirement||p.QUERY),phone=clean(p.phone||p.mobile||p.MOBILE,20),email=clean(p.email||p.EMAIL,254),location=clean(p.location||p.city||p.CITY,200);
@@ -14,6 +24,9 @@ function normaliseLead(p,{webhook=false}={}){
 }
 function template(lead){
  const name=clean(lead.name,120).replace(/[<>\r\n]/g,' '),requirement=clean(lead.details);
+ const kind=topic(requirement);
+ if(kind==='outside'||kind==='unclear')return `Hi ${name}, HM ELECTRICAL handles electrical materials, electrical work and plumbing requirements. Please confirm which of these you need, along with your location. Our team will review your enquiry.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
+ if(kind.endsWith('-work'))return `Hi ${name}, this is Asif from HM ELECTRICAL regarding your ${kind==='plumbing-work'?'plumbing':'electrical work'} enquiry. Please share the fault/work details, site location, preferred visit date and any helpful photos. Our team will confirm technician availability and charges after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
  const cable=/cable|wire/i.test(requirement);
  return `Hi ${name}, this is Asif from HM ELECTRICAL regarding your enquiry. Please share ${cable?'the cable make, number of cores, exact size in sq mm, armoured/unarmoured type, quantity with unit':'the material list, preferred make, size/specification and quantity with unit'}, delivery location and required date. We will check availability and prepare our best quotation. For services, charges will be confirmed after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
 }
@@ -26,8 +39,9 @@ function matches(query,products){
 }
 function publicAnswer(question,products){
  const q=clean(question,350);
+ if(topic(q)==='outside'||topic(q)==='unclear')return {reply:'Hi, we handle electrical materials, electrical work and plumbing requirements. Other work is not offered through this assistant. Please tell us your electrical or plumbing requirement and location.',products:[]};
  if(/civil|shutter|reinforcement|pile head/i.test(q))return {reply:'Hi, we handle material supply and electrical/plumbing technician enquiries. Civil work is not offered. Please share your electrical or plumbing requirement.',products:[]};
- if(/electrician|plumber|technician|repair|leak|wiring/i.test(q))return {reply:'Hi, please share the work/fault, site location, preferred visit date and any helpful photos through our service enquiry form. Our team will review the job before confirming charges and technician availability.',products:[]};
+ if(topic(q).endsWith('-work'))return {reply:'Hi, please share the work/fault, site location, preferred visit date and any helpful photos through our service enquiry form. Our team will review the job before confirming charges and technician availability.',products:[]};
  const found=matches(q,products);
  return {reply:found.length?'Hi, these catalogue references may match your requirement. Please confirm the exact make, size, quantity and delivery location in the enquiry form. Our team will confirm price, stock, GST and transport before acceptance.':'Hi, please share the material name, make, size, quantity and delivery location in the enquiry form. Our team will check the requirement and prepare a quotation.',products:found};
 }
@@ -44,4 +58,4 @@ async function staffNote(lead,{key,fetcher=fetch}={}){
  if(!r.ok)throw Error('AI provider request failed. The reply was not sent.');
  const data=await r.json();return clean((data.output||[]).filter(p=>p.type==='message').flatMap(p=>p.content||[]).filter(p=>p.type==='output_text').map(p=>p.text).join('\n'),3500)||'No staff note returned. Review the original requirement.';
 }
-module.exports={CALLBACK,MODEL,clean,normaliseLead,template,matches,publicProduct,publicAnswer,authorisedHook,month,modelInput,staffNote};
+module.exports={CALLBACK,MODEL,POLICY,topic,clean,normaliseLead,template,matches,publicProduct,publicAnswer,authorisedHook,month,modelInput,staffNote};

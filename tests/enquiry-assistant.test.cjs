@@ -32,6 +32,14 @@ test('AI sees requirement/location only, uses bounded cheap model, no tools or p
  assert.equal(note,'Confirm size.');assert.equal(sent.store,false);assert.equal(sent.max_output_tokens,500);assert.equal(sent.model,'gpt-4.1-mini-2025-04-14');assert.equal(sent.tools,undefined);assert.doesNotMatch(sent.input,/Private Name|9000000000|private@example|purchase_price/);
 });
 test('budget month follows India local time',()=>{assert.equal(a.month(new Date('2026-11-30T19:00:00Z')),'2026-12-01');});
+
+test('owner scope is electrical/plumbing only and service replies ask about work instead of a material order',()=>{
+ assert.equal(a.topic('electrical wiring repair'),'electrical-work');assert.equal(a.topic('plumbing tap leak'),'plumbing-work');
+ assert.equal(a.topic('CPVC pipe 25 mm'),'plumbing-material');assert.equal(a.topic('MCB 32 amp'),'electrical-material');
+ for(const q of ['civil concrete work','HVAC repair','fire fighting installation','hotel room booking'])assert.equal(a.publicAnswer(q,[{name:q}]).products.length,0);
+ const reply=a.template({name:'Customer',details:'plumber needed for tap leak'});assert.match(reply,/fault\/work details/);assert.doesNotMatch(reply,/material list|best quotation/);
+ assert.equal(a.POLICY.ownerEmail,'hmelectrical06@gmail.com');assert.equal(a.POLICY.ownerMobile,'8085560156');assert.equal(a.POLICY.customerAutoSend,false);
+});
 test('private assistant tables and reservation function are not exposed to anon/authenticated',()=>{
  const sql=fs.readFileSync('database/enquiry-assistant.sql','utf8');for(const t of ['hm_ai_external_leads','hm_ai_drafts','hm_ai_budget','hm_ai_usage'])assert.match(sql,new RegExp('alter table public.'+t+' enable row level security'));
  assert.match(sql,/from public,anon,authenticated/);assert.match(sql,/security invoker/);assert.match(sql,/for update/);assert.match(sql,/used>=100/);assert.match(sql,/reserved_inr\+5/);
