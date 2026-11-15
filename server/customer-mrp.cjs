@@ -15,7 +15,7 @@ function select(query,rows){
  const q=normal(query),terms=[...new Set(q.split(/\s+/).filter(w=>!STOP.has(w)))],brands=['ashirvad','supreme','ajay','braco','havells','polycab','anchor','legrand','schneider','finolex','lauritz'];
  const brand=brands.find(b=>q.split(' ').includes(b)),sku=terms.find(t=>/^700\d{5}$/.test(t));
  const words=terms.filter(w=>!brands.includes(w)&&!/^\d+(?:\.\d+)?$/.test(w));
- if(!sku&&(!words.length||!brand))return [];
+ if(!sku&&!words.length)return [];
  const dimensions=sizes(query);
  return rows.filter(r=>r.review_status==='Verified reference'&&Number(r.printed_mrp)>0&&r.material&&(!brand||normal(r.brand)===brand)).filter(r=>{
   if(sku)return r.manufacturer_sku===sku;
@@ -25,18 +25,18 @@ function select(query,rows){
   if(dimensions.length){const nums=sizes(r.material.specification);if(dimensions.length!==nums.length||dimensions.some((n,i)=>n!==nums[i]))return false;}
   const length=String(query).toLowerCase().match(/\b(\d+(?:\.\d+)?)\s*(?:mtr|m)\b/);if(length&&!new RegExp('\\b'+length[1].replace('.','\\.')+'\\s*(?:mtr|m)\\b').test(text))return false;
   return true;
- }).sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand&&x.material.name===r.material.name&&x.material.specification===r.material.specification&&x.material.unit===r.material.unit)===i).slice(0,2).map(r=>({name:r.material.name,size:r.material.specification,unit:r.material.unit,brand:r.brand,mrp:Number(r.printed_mrp),effectiveDate:r.effective_date||null,sku:/^700\d{5}$/.test(r.manufacturer_sku||'')?r.manufacturer_sku:null}));
+ }).sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand&&x.material.name===r.material.name&&x.material.specification===r.material.specification&&x.material.unit===r.material.unit)===i).map(r=>({name:r.material.name,size:r.material.specification,unit:r.material.unit,brand:r.brand,mrp:Number(r.printed_mrp),effectiveDate:r.effective_date||null,sku:/^700\d{5}$/.test(r.manufacturer_sku||'')?r.manufacturer_sku:null})).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand)===i).slice(0,3);
 }
 async function references(query){
  if(!cache||Date.now()>expires){let rows=[];for(let offset=0;offset<5000;offset+=500){const page=await c.db('hm_supplier_price_rows?select=brand,printed_mrp,review_status,manufacturer_sku,effective_date,material:hm_material_master!inner(name,specification,unit)&review_status=eq.Verified%20reference&order=id&limit=500&offset='+offset);rows.push(...page);if(page.length<500)break;}cache=rows;expires=Date.now()+120000;}
  return select(query,cache);
 }
-function text(rows){
+function text(rows,{max=650}={}){
  if(!rows.length)return 'Please share the exact brand, material name, size and grade/model. I can share an available verified printed MRP reference; where no matching MRP is available our office will confirm it. Final selling rates and all service charges are confirmed by HM ELECTRICAL after review.';
- const line=r=>`${r.brand} ${r.name.slice(0,95)} | ${r.size.slice(0,75)}: Rs ${r.mrp.toFixed(2)}/${r.unit}${r.effectiveDate?' (list '+r.effectiveDate+')':''}`;
- const suffix='\nPrinted list references only; final selling rates, tax basis, stock and transport require HM ELECTRICAL confirmation.';
- let answer='HM ELECTRICAL material MRP reference only (INR; listed variants):\n'+rows.map(line).join('\n')+suffix;
- if(answer.length>650)answer='HM ELECTRICAL material MRP reference only (INR; one matching variant):\n'+line(rows[0])+suffix;
+ const line=r=>`${r.brand}: ${r.name.slice(0,75)} | ${r.size.slice(0,50)} — Rs ${r.mrp.toFixed(2)}/${r.unit}`;
+ const suffix='\nMRP reference only. Final selling rates aur stock hamari team confirm karegi.';
+ let shown=rows.slice(0,3),answer='HM ELECTRICAL — available make/size MRP references:\n'+shown.map(line).join('\n')+suffix;
+ while(answer.length>max&&shown.length>1){shown.pop();answer='HM ELECTRICAL — available make/size MRP references:\n'+shown.map(line).join('\n')+suffix;}
  return answer;
 }
 module.exports={normal,select,references,text};

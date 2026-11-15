@@ -7,6 +7,7 @@ exports.handler=c.safe(async e=>{
  if(p.messages!==undefined){
   let messages;try{messages=chat.history(p.messages);}catch(err){c.fail(400,err.message);}
   if(p.consent!==true)c.fail(400,'Please agree to the chat processing notice.');
+  if(process.env.HM_CUSTOMER_CHAT_SIMPLE==='true')return c.reply(200,{ok:true,mode:'simple-enquiry-chat',...await require('../../server/simple-customer-chat.cjs').answer(messages)});
   let step=chat.fallback(messages),mode='guided-chat';
   if(process.env.HM_CUSTOMER_AI_ENABLED==='true'&&process.env.HM_CUSTOMER_AI_VIA_SUPABASE==='true'){
    if(typeof p.requestId!=='string'||! /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.requestId))c.fail(400,'Invalid chat request ID.');
