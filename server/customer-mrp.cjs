@@ -34,7 +34,7 @@ async function references(query){
 function text(rows,{max=650}={}){
  if(!rows.length)return 'Please share the exact brand, material name, size and grade/model. I can share an available verified printed MRP reference; where no matching MRP is available our office will confirm it. Final selling rates and all service charges are confirmed by HM ELECTRICAL after review.';
  const line=r=>`${r.brand}: ${r.name.slice(0,75)} | ${r.size.slice(0,50)} — Rs ${r.mrp.toFixed(2)}/${r.unit}`;
- const suffix='\nMRP reference only. Final selling rates aur stock hamari team confirm karegi.';
+ const suffix='\nMRP reference only. Our team will confirm the final selling rate and stock.';
  let shown=rows.slice(0,3),answer='HM ELECTRICAL — available make/size MRP references:\n'+shown.map(line).join('\n')+suffix;
  while(answer.length>max&&shown.length>1){shown.pop();answer='HM ELECTRICAL — available make/size MRP references:\n'+shown.map(line).join('\n')+suffix;}
  return answer;

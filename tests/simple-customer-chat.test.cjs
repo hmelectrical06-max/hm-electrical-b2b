@@ -1,23 +1,23 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),simple=require('../server/simple-customer-chat.cjs'),mrp=require('../server/customer-mrp.cjs');
 test('three plumbers get one short work question, then an office handoff without location/date questionnaires',async()=>{
- const first=await simple.answer([{role:'user',content:'3 PLUMBER'}]);assert.equal(first.step,'work');assert.match(first.reply,/services available/);assert.match(first.reply,/Kya kaam/);assert.doesNotMatch(first.reply,/landmark|location|duration|date|shift/i);
- const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:first.reply},{role:'user',content:'Bathroom tap fitting aur repair'}]);assert.equal(next.step,'handoff');assert.match(next.reply,/naam aur mobile/);assert.doesNotMatch(next.reply,/landmark|duration|date|shift/i);
+ const first=await simple.answer([{role:'user',content:'3 PLUMBER'}]);assert.equal(first.step,'work');assert.match(first.reply,/manpower services/);assert.match(first.reply,/What work/);assert.doesNotMatch(first.reply,/landmark|location|duration|date|shift/i);
+ const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:first.reply},{role:'user',content:'Bathroom tap fitting aur repair'}]);assert.equal(next.step,'handoff');assert.match(next.reply,/name and mobile/);assert.doesNotMatch(next.reply,/landmark|duration|date|shift/i);
 });
 test('a plain item name immediately returns available make MRP and never requests a make first',async()=>{
  const old=mrp.references;mrp.references=async()=>[{brand:'Ashirvad',name:'CPVC Pipe SDR11 3m',size:'15 mm',unit:'Nos',mrp:390}];
- try{const p=await simple.answer([{role:'user',content:'CPVC pipe'}]);assert.equal(p.step,'price');assert.match(p.reply,/Ashirvad/);assert.match(p.reply,/390.00/);assert.match(p.reply,/size aur kitni quantity/);assert.doesNotMatch(p.reply,/which brand|preferred make|location/i);assert.ok(p.reply.length<=650);
- const next=await simple.answer([{role:'user',content:'CPVC pipe 15mm'},{role:'assistant',content:p.reply},{role:'user',content:'100 pcs'}]);assert.match(next.reply,/Size aur quantity note/);assert.doesNotMatch(next.reply,/Kaunsa size|Kitni quantity/);
+ try{const p=await simple.answer([{role:'user',content:'CPVC pipe'}]);assert.equal(p.step,'price');assert.match(p.reply,/Ashirvad/);assert.match(p.reply,/390.00/);assert.match(p.reply,/size and quantity/);assert.doesNotMatch(p.reply,/which brand|preferred make|location/i);assert.ok(p.reply.length<=650);
+ const next=await simple.answer([{role:'user',content:'CPVC pipe 15mm'},{role:'assistant',content:p.reply},{role:'user',content:'100 pcs'}]);assert.match(next.reply,/Size and quantity noted/);assert.doesNotMatch(next.reply,/What size|What quantity/);
  }finally{mrp.references=old;}
 });
 test('missing material rates hand off without inventing an amount and civil remains excluded',async()=>{
- const old=mrp.references;mrp.references=async()=>[];
- try{let p=await simple.answer([{role:'user',content:'MCB'}]);assert.equal(p.step,'handoff');assert.match(p.reply,/MRP abhi available nahi/);assert.doesNotMatch(p.reply,/Rs\s*\d/);p=await simple.answer([{role:'user',content:'civil labour excavation'}]);assert.equal(p.step,'outside');}finally{mrp.references=old;}
+ const old=mrp.references;mrp.references=async()=>[];require('../server/live-catalogue.cjs').products=async()=>[{name:'MCB SP',size:'6A'},{name:'Wire',size:'2.5 sqmm'}];
+ try{let p=await simple.answer([{role:'user',content:'MCB'}]);assert.equal(p.step,'handoff');assert.match(p.reply,/can arrange supply/);assert.doesNotMatch(p.reply,/Rs\s*\d/);p=await simple.answer([{role:'user',content:'civil labour excavation'}]);assert.equal(p.step,'outside');}finally{mrp.references=old;}
 });
 test('wire starts a material request even after a plumber conversation and asks only size/quantity',async()=>{
  const old=mrp.references;mrp.references=async()=>[];
- try{const p=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:simple.SERVICE},{role:'user',content:'WIRE'}]);assert.match(p.reply,/size aur kitni quantity/);assert.doesNotMatch(p.reply,/location|landmark|Google Maps|Kya kaam/i);
- const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:simple.SERVICE},{role:'user',content:'WIRE'},{role:'assistant',content:p.reply},{role:'user',content:'2.5 sqmm 100 metres'}]);assert.match(next.reply,/Size aur quantity note/);assert.doesNotMatch(next.reply,/Kya kaam|location|landmark/i);
+ try{const p=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:simple.SERVICE},{role:'user',content:'WIRE'}]);assert.match(p.reply,/size and quantity/);assert.doesNotMatch(p.reply,/location|landmark|Google Maps|What work/i);
+ const next=await simple.answer([{role:'user',content:'3 PLUMBER'},{role:'assistant',content:simple.SERVICE},{role:'user',content:'WIRE'},{role:'assistant',content:p.reply},{role:'user',content:'2.5 sqmm 100 metres'}]);assert.match(next.reply,/Size and quantity noted/);assert.doesNotMatch(next.reply,/What work|location|landmark/i);
  }finally{mrp.references=old;}
 });
 test('available make examples preserve each actual size and omit supplier discounts and costs',()=>{
