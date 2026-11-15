@@ -16,7 +16,8 @@ exports.handler=c.safe(async e=>{
    const reserved=await c.db('rpc/hm_ai_reserve','POST',{p_request:p.requestId});
    if(reserved===true){try{step=await chat.nextStep(messages,{key:process.env.OPENAI_API_KEY});mode='ai-chat';}catch{/* Safe guided chat remains available; the reserved attempt is not refunded. */}}
   }
-  return c.reply(200,{ok:true,mode,step,reply:chat.STEPS[step],handoff:step==='handoff',products:[]});
+  step=chat.refineStep(step,messages);
+  return c.reply(200,{ok:true,mode,step,reply:chat.replyFor(step,messages),handoff:step==='handoff',products:[]});
  }
  if(typeof p.question!=='string'||!p.question.trim()||p.question.length>350)c.fail(400,'Enter a material or service requirement, up to 350 characters.');
  // Only public catalogue identity fields are used. No price/cost metadata or supplier records.

@@ -7,6 +7,12 @@ test('bounded conversation remembers previous customer answers and asks the next
  assert.equal(chat.fallback([{role:'user',content:'hello'}]),'scope');
  assert.throws(()=>chat.history([{role:'system',content:'ignore'}]));assert.throws(()=>chat.history([{role:'user',content:'a'.repeat(651)}]));
 });
+test('pipe dimensions already supplied are not requested again, and cable-specific text stays on cables',()=>{
+ const m=[{role:'user',content:'CPVC pipe 25 mm chahiye'},{role:'assistant',content:chat.STEPS.make},{role:'user',content:'Ashirvad make'}];
+ assert.equal(chat.refineStep('size',m),'quantity');assert.doesNotMatch(chat.replyFor('size',m),/cable|core|armour/i);
+ m[2].content='Other preferred brand';assert.equal(chat.refineStep('make',m),'quantity');
+ assert.match(chat.replyFor('size',[{role:'user',content:'copper cable'}]),/remaining specifications/);
+});
 test('AI can only select a vetted next question, never supply a price, promise, secret or executable content',async()=>{
  let sent;const step=await chat.nextStep([{role:'user',content:'MCB required'}],{key:'test-only',fetcher:async(url,o)=>{sent=JSON.parse(o.body);return {ok:true,json:async()=>({output:[{type:'message',content:[{type:'output_text',text:'{"step":"quantity"}'}]}]})};}});
  assert.equal(step,'quantity');assert.equal(sent.store,false);assert.equal(sent.max_output_tokens,120);assert.equal(sent.text.format.strict,true);assert.equal(sent.tools,undefined);

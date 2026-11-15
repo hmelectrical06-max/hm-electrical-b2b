@@ -4,7 +4,7 @@ const STEPS={
  scope:'Hi! Do you need electrical materials, an electrician or plumbing materials/work?',
  material:'Which material do you need? Please share its name.',
  make:'Which brand/make do you prefer? You can also say “brand open”.',
- size:'What size/specification do you need? For cables, include cores, sq mm and armouring.',
+ size:'What size/specification or rating do you need?',
  quantity:'How much material do you need? Please include the unit, such as pieces or metres.',
  work:'Please describe the electrical/plumbing fault or work required.',
  location:'Which area is the delivery/site in? Please share the area only; use the enquiry form for your full address.',
@@ -28,7 +28,7 @@ function fallback(messages){
  const location=/\b(mumbai|mumbra|thane|sion|borivali|kurla|andheri|bandra|navi mumbai|turbhe|khardi|dadar|worli|worali|powai|kalyan|dombivli|bhiwandi|panvel|vashi|mulund)\b/i.test(users);
  const date=/\b(today|tomorrow|urgent|asap|aaj|kal|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\d{1,2}[/-]\d{1,2}/i.test(users);
  if(kind.endsWith('-work'))return !location?'location':!date?'date':'handoff';
- const make=/\b(ashirvad|ashirwad|astral|supreme|ajay|polycab|finolex|havells|anchor|panasonic|legrand|schneider|braco|lauritz|knudsen|brand open|any brand|any make|no preference)\b/i.test(users);
+ const make=/\b(ashirvad|ashirwad|astral|supreme|ajay|polycab|finolex|havells|anchor|panasonic|legrand|schneider|braco|lauritz|knudsen|brand open|any brand|any make|no preference)\b/i.test(users)||messages.some((m,i)=>m.role==='assistant'&&m.content===STEPS.make&&messages[i+1]?.role==='user'&&messages[i+1].content.length<100&&!/\b(price|rate|cost|kitna|charge|why|what|which)\b|\?/i.test(messages[i+1].content));
  if(!make)return 'make';
  if(!/\d+(?:\.\d+)?\s*(mm|inch|inches|sq\s*mm|amp|a\b|watt|w\b)/i.test(users))return 'size';
  if(!/\d+(?:\.\d+)?\s*(pcs|pieces?|nos?|metres?|meters?|mtr|rolls?|boxes?|kg|litres?)/i.test(users))return 'quantity';
@@ -41,8 +41,19 @@ async function nextStep(messages,{key,fetcher=fetch}={}){
  const d=await r.json(),s=(d.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('');
  const result=JSON.parse(s);if(!Object.hasOwn(STEPS,result.step))throw Error('Invalid chat step');return result.step;
 }
+function refineStep(step,messages){
+ const users=messages.filter(m=>m.role==='user').map(m=>m.content).join(' ');
+ // The model may ask for a pressure class after a supplied pipe size. Keep the
+ // conversation moving; the final specification/quote is always reviewed by staff.
+ if(/\b(cpvc|upvc|pvc|pipe|mcb|mccb|switch|light|led)\b/i.test(users)&&!/cable|wire/i.test(users)){
+  const order=['make','size','quantity','location','date','handoff'],next=fallback(messages),index=order.indexOf(step);
+  if(index>=0&&index<=2&&order.indexOf(next)>index)return next;
+ }
+ return step;
+}
+function replyFor(step,messages){return step==='size'&&/cable|wire/i.test(messages.filter(m=>m.role==='user').map(m=>m.content).join(' '))?'For cables, please confirm any remaining specifications: number of cores, size in sq mm and armoured/unarmoured type.':STEPS[step];}
 async function edgeStep(messages,requestId,{url,headers,fetcher=fetch}){
  const r=await fetcher(url+'/functions/v1/hm-enquiry-ai',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({messages,requestId}),signal:AbortSignal.timeout(24000)});
  if(!r.ok)throw Error('Runtime AI unavailable');const d=await r.json();if(!Object.hasOwn(STEPS,d.step))throw Error('Invalid runtime step');return d.step;
 }
-module.exports={STEPS,history,fallback,input,nextStep,edgeStep};
+module.exports={STEPS,history,fallback,input,nextStep,edgeStep,refineStep,replyFor};
