@@ -15,6 +15,13 @@ test('customer emails use the business reply address and stable provider idempot
  global.fetch=async(url,o)=>{sent={body:JSON.parse(o.body),headers:o.headers};return Response.json({id:'provider-test'});};
  try{await require('../server/email-notifications.cjs').sendCustomerEmail({to:lead.email,idempotencyKey:'hm-customer-id',...r.compose('manpower',lead)});assert.deepEqual(sent.body.to,[lead.email]);assert.equal(sent.body.reply_to,'hmelectrical06@gmail.com');assert.equal(sent.headers['Idempotency-Key'],'hm-customer-id');assert.equal(sent.body.cc,undefined);await assert.rejects(require('../server/email-notifications.cjs').sendCustomerEmail({to:'a@b.com, victim@example.com'}),/INVALID/);}finally{global.fetch=old;for(const [k,v]of Object.entries(env))if(v===undefined)delete process.env[k];else process.env[k]=v;}
 });
+test('dispatcher stops a closed enquiry instead of emailing and retries provider failures with the same immutable payload',async()=>{
+ const db=c.db,mail=require('../server/email-notifications.cjs'),send=mail.sendCustomerEmail,flag=process.env.HM_CUSTOMER_EMAIL_ENABLED;
+ process.env.HM_CUSTOMER_EMAIL_ENABLED='true';let source={...lead,status:'Closed'},sent=0,patch;
+ c.db=async(path,method,body)=>{if(path==='rpc/hm_claim_customer_replies')return [{id:lead.id,lead_key:'manpower:'+lead.id,recipient:lead.email,attempts:1,payload:r.compose('manpower',lead)}];if(path.startsWith('hm_manpower_requests?'))return [source];patch=body;return [{id:lead.id}];};
+ mail.sendCustomerEmail=async()=>{sent++;throw Error('RESEND_TEMPORARILY_UNAVAILABLE');};
+ try{await r.dispatch();assert.equal(sent,0);assert.equal(patch.status,'stopped');source={...lead};await r.dispatch();assert.equal(sent,1);assert.equal(patch.status,'pending');assert.equal(patch.last_error,'RESEND_TEMPORARILY_UNAVAILABLE');assert.ok(Date.parse(patch.next_attempt_at)>Date.now());}finally{c.db=db;mail.sendCustomerEmail=send;if(flag===undefined)delete process.env.HM_CUSTOMER_EMAIL_ENABLED;else process.env.HM_CUSTOMER_EMAIL_ENABLED=flag;}
+});
 test('private SQL queue leases once, caps recipient sends and stops ambiguous retries before provider idempotency expires',async()=>{
  const {PGlite}=require('@electric-sql/pglite'),db=new PGlite();
  try{
