@@ -8,6 +8,7 @@ Owner-approved AI planning budget: maximum INR 500/month, confirmed 15 November 
 - `/admin/assistant.html` uses the existing Admin MFA session. Website enquiries and private external/Justdial records share one inbox.
 - Standard reply begins **Hi**, identifies Asif / HM ELECTRICAL, uses **8085560156**, asks missing material details, and promises only a checked quotation.
 - Approved reply is saved/copied, not sent. No supplier purchase data enters the customer template or AI prompt.
+- A Netlify scheduled function prepares up to three previously undrafted enquiries every 15 minutes. It makes no paid AI calls and sends nothing. Stable request IDs prevent duplicate scheduled drafts. Closed website enquiries are excluded.
 - External leads are deduplicated by provider reference. The webhook is off by default.
 
 ## OpenAI connection (not activated by adding this code)

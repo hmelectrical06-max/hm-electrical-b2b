@@ -43,6 +43,7 @@ test('isolated database enforces duplicate and concurrent budget reservations an
  const {PGlite}=require('@electric-sql/pglite'),db=new PGlite();
  try{
   await db.exec('create role anon;create role authenticated;create role service_role bypassrls;grant usage on schema public to anon,authenticated,service_role;');
+  await db.exec("create table public.enquiries(id uuid primary key,name text,details text,location text,items jsonb,status text,created_at timestamptz default now());grant select on public.enquiries to service_role;");
   await db.exec(fs.readFileSync('database/enquiry-assistant.sql','utf8'));await db.exec('set role service_role');
   const first='10000000-0000-4000-8000-000000000001';assert.equal((await db.query('select hm_ai_reserve($1) ok',[first])).rows[0].ok,true);assert.equal((await db.query('select hm_ai_reserve($1) ok',[first])).rows[0].ok,false);
   const calls=Array.from({length:105},(_,i)=>db.query('select hm_ai_reserve($1) ok',['20000000-0000-4000-8000-'+String(i).padStart(12,'0')]));const rows=await Promise.all(calls);assert.equal(rows.filter(r=>r.rows[0].ok).length,99);
@@ -50,4 +51,9 @@ test('isolated database enforces duplicate and concurrent budget reservations an
   await db.exec('reset role;set role anon');await assert.rejects(db.query('select * from hm_ai_external_leads'),/permission denied/);await assert.rejects(db.query('select hm_ai_reserve($1)',[first]),/permission denied/);
   await db.exec('reset role;set role authenticated');await assert.rejects(db.query('select * from hm_ai_drafts'),/permission denied/);
  }finally{await db.close();}
+});
+test('scheduled draft preparation is idempotent, records no human creator and does not send or call AI',async()=>{
+ const c=require('../server/core.cjs'),original=c.db,handler=require('../netlify/functions/assistant-drafts.js').handler,ids=new Set();let inserts=0;
+ c.db=async(path,method,body)=>{if(path==='rpc/hm_ai_pending')return [{lead_key:'external:10000000-0000-4000-8000-000000000001',name:'Ganesh',details:'Cable',location:'Mumbai',items:[]}];assert.equal(body.created_by,null);assert.equal(body.engine,'scheduled-standard');assert.match(body.reply,/^Hi Ganesh/);assert.doesNotMatch(body.reply,/8733079652/);if(ids.has(body.id))return [];ids.add(body.id);inserts++;return [body];};
+ try{assert.equal(JSON.parse((await handler()).body).prepared,1);assert.equal(JSON.parse((await handler()).body).prepared,0);assert.equal(inserts,1);assert.doesNotMatch(fs.readFileSync('netlify/functions/assistant-drafts.js','utf8'),/staffNote\(|sendOfficeEmail|api.openai.com/);}finally{c.db=original;}
 });

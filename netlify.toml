@@ -41,6 +41,9 @@
 [functions."notify"]
   schedule = "*/5 * * * *"
 
+[functions."assistant-drafts"]
+  schedule = "*/15 * * * *"
+
 [[headers]]
   for = "/downloads/HM-ELECTRICAL-Company-Profile-2026-Public.pdf"
   [headers.values]

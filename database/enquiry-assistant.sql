@@ -9,7 +9,7 @@ create table if not exists public.hm_ai_external_leads (
 create table if not exists public.hm_ai_drafts (
  id uuid primary key,lead_key text not null,reply text not null check(length(reply) between 1 and 2000),
  staff_note text not null default '',engine text not null,status text not null default 'draft' check(status in ('draft','approved')),
- created_by uuid not null,approved_by uuid,approved_at timestamptz,created_at timestamptz not null default now()
+ created_by uuid,approved_by uuid,approved_at timestamptz,created_at timestamptz not null default now()
 );
 create table if not exists public.hm_ai_budget (
  month date primary key,reserved_inr integer not null default 0 check(reserved_inr between 0 and 500),
@@ -38,3 +38,16 @@ begin
 end $$;
 revoke all on function public.hm_ai_reserve(uuid) from public,anon,authenticated;
 grant execute on function public.hm_ai_reserve(uuid) to service_role;
+-- A background draft has no human creator. Approval still records a real admin.
+alter table public.hm_ai_drafts alter column created_by drop not null;
+create or replace function public.hm_ai_pending() returns table(lead_key text,name text,details text,location text,items jsonb) language sql stable security invoker set search_path='' as $$
+ select q.lead_key,q.name,q.details,q.location,q.items from (
+  select 'website:'||e.id::text lead_key,e.name,e.details,e.location,e.items,e.created_at from public.enquiries e
+   where e.status<>'Closed' and not exists(select 1 from public.hm_ai_drafts d where d.lead_key='website:'||e.id::text)
+  union all
+  select 'external:'||e.id::text,e.name,e.details,e.location,'[]'::jsonb,e.created_at from public.hm_ai_external_leads e
+   where e.status='New' and not exists(select 1 from public.hm_ai_drafts d where d.lead_key='external:'||e.id::text)
+ ) q order by q.created_at limit 3;
+$$;
+revoke all on function public.hm_ai_pending() from public,anon,authenticated;
+grant execute on function public.hm_ai_pending() to service_role;
