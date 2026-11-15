@@ -6,7 +6,9 @@ const path = require('node:path');
 const sensitiveEnvironmentVariables = [
   'SUPABASE_SERVICE_ROLE_KEY',
   'HM_EMAIL_PROVIDER_TOKEN',
-  'RATE_LIMIT_SECRET'
+  'RATE_LIMIT_SECRET',
+  'OPENAI_API_KEY',
+  'HM_JD_WEBHOOK_SECRET'
 ];
 
 module.exports = function checkPublishSecrets(publishDirectory) {

@@ -13,6 +13,7 @@
  const more=document.createElement('details');more.className='daily-more';more.innerHTML='<summary>More</summary><div></div>';nav.append(more);
  const extra=more.querySelector('div');function option(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{mark('');fn();};extra.append(b);}
  option('Company files (private)',()=>show('files'));
+ option('AI enquiry desk',()=>{location.href='/admin/assistant.html';});
  for(const [label,selector]of [['Enquiry filters & export','[data-view="enquiries"]'],['Stock / inventory','[data-view="inventory"]'],['Hiring & bookings','[data-view="serviceBookings"]'],['Manpower availability','[data-platform="manpower"]'],['Service listings','[data-platform="services"]'],['Supplier rate follow-ups','[data-procurement="rfqs"]'],['Older quotations','[data-view="quotations"]'],['Advanced product import','[data-view="catalogue"]'],['Other website photos','[data-view="photos"]'],['Change history','[data-platform="audit"]']])option(label,()=>oldNav.querySelector(selector)?.click());
  // Specialist screens still work; main navigation always closes them consistently.
  oldNav.addEventListener('click',()=>{desk.hidden=true;});
