@@ -24,3 +24,5 @@ test('available make examples preserve each actual size and omit supplier discou
  const row={review_status:'Verified reference',printed_mrp:390,brand:'Ashirvad',material:{name:'CPVC Pipe',specification:'15 mm',unit:'Nos'},purchase_price:100,discount_percent:65};
  const refs=mrp.select('CPVC pipe',[row,{...row,printed_mrp:500},{...row,brand:'Supreme',printed_mrp:410},{...row,brand:'Ajay',printed_mrp:380}]);assert.equal(refs.length,3);assert.deepEqual(new Set(refs.map(r=>r.brand)),new Set(['Ashirvad','Supreme','Ajay']));assert.doesNotMatch(JSON.stringify(refs),/purchase|discount/);assert.ok(mrp.text(refs).length<=650);
 });
+
+test('public company keywords and common material aliases stay concise and exclude private data',()=>{assert.equal(simple.normalQuery('taar'),'wire');for(const q of ['company profile','projects','team']){const reply=simple.companyReply(q);assert.ok(reply.length<=650);assert.match(reply,/hmelectricalb2b.com/);assert.doesNotMatch(reply,/bank|salary|purchase_price|supplier_discount|aadhaar/i);}});
