@@ -1,8 +1,21 @@
 'use strict';
 const c=require('../../server/core.cjs'),a=require('../../server/enquiry-assistant.cjs');
+const chat=require('../../server/customer-chat.cjs');
 exports.handler=c.safe(async e=>{
  if(e.httpMethod!=='POST')return c.reply(405,{ok:false});c.origin(e);await c.rate(e,'public-assistant',30);
- const p=c.body(e,3000);if(typeof p.question!=='string'||!p.question.trim()||p.question.length>350)c.fail(400,'Enter a material or service requirement, up to 350 characters.');
+ const p=c.body(e,14000);
+ if(p.messages!==undefined){
+  let messages;try{messages=chat.history(p.messages);}catch(err){c.fail(400,err.message);}
+  if(p.consent!==true)c.fail(400,'Please agree to the chat processing notice.');
+  let step=chat.fallback(messages),mode='guided-chat';
+  if(process.env.HM_CUSTOMER_AI_ENABLED==='true'&&process.env.OPENAI_API_KEY&&new Date()<new Date('2026-12-16T00:00:00+05:30')){
+   if(typeof p.requestId!=='string'||! /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.requestId))c.fail(400,'Invalid chat request ID.');
+   const reserved=await c.db('rpc/hm_ai_reserve','POST',{p_request:p.requestId});
+   if(reserved===true){try{step=await chat.nextStep(messages,{key:process.env.OPENAI_API_KEY});mode='ai-chat';}catch{/* Safe guided chat remains available; the reserved attempt is not refunded. */}}
+  }
+  return c.reply(200,{ok:true,mode,step,reply:chat.STEPS[step],handoff:step==='handoff',products:[]});
+ }
+ if(typeof p.question!=='string'||!p.question.trim()||p.question.length>350)c.fail(400,'Enter a material or service requirement, up to 350 characters.');
  // Only public catalogue identity fields are used. No price/cost metadata or supplier records.
  const products=await require('../../server/live-catalogue.cjs').products();
  return c.reply(200,{ok:true,mode:'catalogue-guidance',...a.publicAnswer(p.question,products)});

@@ -33,3 +33,11 @@ Owner must choose/authorise an official WhatsApp Business Platform connection, v
 ## Deployment and verification
 
 Apply `database/enquiry-assistant.sql` as an additive production migration after tests. Run assistant security/functional tests and full build. Verify unauthenticated Admin denial, public response privacy, disabled Justdial hook, a standard draft in the authenticated workspace, and budget concurrency in an isolated DB. Do not send fake test leads to real customers. Record deployment ID and remaining external activation steps.
+# Direct website enquiry chat — 15 November 2026
+
+The website widget now keeps a bounded conversation in page memory and transfers the customer's requirements into the existing enquiry form. It does not submit that form, contact a customer externally or confirm prices, stock, delivery or technician bookings. The existing enquiry form sends office email after submission.
+
+With `HM_CUSTOMER_AI_ENABLED=true` and a dedicated **hmelectrical06@gmail.com business-account** API key in server secrets, OpenAI selects the next missing enquiry question using a strict schema. Customer-facing text is a vetted question, never arbitrary model text. Each turn reserves one of the same 100 monthly ₹5 planning allowances. Without connection, allowance, or provider availability, the widget labels itself **Guided chat** and continues without paid calls. Price review remains due after 15 December 2026. This allowance excludes other usage on the same provider account and messaging/hosting charges.
+
+Justdial external replies and WhatsApp owner alerts on 8085560156 remain disconnected pending supported API/CRM and messaging credentials. Never reuse Groww trading tokens for AI. Do not use the proprietor's personal OpenAI account for this business integration.
+
