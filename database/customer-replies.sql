@@ -44,7 +44,7 @@ language sql stable security invoker set search_path='' as $$
    where e.status<>'Closed'
   union all
   select 'manpower:'||e.id::text,e.contact_name,e.trade||' x '||e.quantity||'. '||e.details||' Required: '||e.required_date||'. Duration: '||e.duration,e.site_location,'[]'::jsonb,e.created_at from public.hm_manpower_requests e
-   where e.status<>'Closed' and e.trade in ('Electrician','Plumber')
+   where e.status<>'Closed' and e.trade in ('Electrician','Plumber','Welder','Helper','Supervisor')
   union all
   select 'booking:'||e.id::text,e.customer_name,e.category||'. '||e.description||'. Preferred: '||e.preferred_at,e.area,'[]'::jsonb,e.created_at from public.service_bookings e
    where e.status not in ('Completed','Cancelled')

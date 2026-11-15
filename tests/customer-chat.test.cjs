@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),chat=requ
 test('bounded conversation remembers previous customer answers and asks the next missing field',()=>{
  const m=[{role:'user',content:'CPVC pipe 25 mm'},{role:'assistant',content:chat.STEPS.make},{role:'user',content:'Ashirvad'}];
  assert.equal(chat.fallback(chat.history(m)),'quantity');m.push({role:'assistant',content:chat.STEPS.quantity},{role:'user',content:'20 metres, Mumbra, tomorrow'});assert.equal(chat.fallback(m),'handoff');
- assert.equal(chat.fallback([{role:'user',content:'plumber needed for tap leak in Mumbra tomorrow'}]),'handoff');
+ assert.equal(chat.fallback([{role:'user',content:'plumber needed for tap leak in Mumbra near Bilal hospital tomorrow'}]),'handoff');
  assert.equal(chat.fallback([{role:'user',content:'hello'}]),'scope');
  assert.throws(()=>chat.history([{role:'system',content:'ignore'}]));assert.throws(()=>chat.history([{role:'user',content:'a'.repeat(651)}]));
 });
@@ -14,9 +14,27 @@ test('pipe dimensions already supplied are not requested again, and cable-specif
  assert.match(chat.replyFor('size',[{role:'user',content:'copper cable'}]),/remaining specifications/);
 });
 test('service faults, area and date already supplied do not get asked for again',()=>{
- const m=[{role:'user',content:'Mumbra me bathroom tap se paani leak ho raha hai. Kal plumber chahiye.'}];
+ const m=[{role:'user',content:'Mumbra me Bilal hospital ke paas bathroom tap se paani leak ho raha hai. Kal plumber chahiye.'}];
  for(const step of ['work','location','date'])assert.equal(chat.refineStep(step,m),'handoff');
  assert.equal(chat.refineStep('work',[{role:'user',content:'plumber chahiye'}]),'work');
+});
+test('a technician request cannot finish with only a trade, city and date; actual work and site landmark are collected',()=>{
+ const m=[{role:'user',content:'Kal Mumbra me electrician chahiye'}];
+ assert.equal(chat.refineStep('handoff',m),'work');
+ m.push({role:'assistant',content:chat.STEPS.work},{role:'user',content:'2 bedroom flat me 12 switch replacement aur fan installation'});
+ assert.equal(chat.refineStep('handoff',m),'landmark');
+ m.push({role:'assistant',content:chat.STEPS.landmark},{role:'user',content:'Bilal hospital ke paas Golden Park building'});
+ assert.equal(chat.refineStep('work',m),'handoff');
+ assert.match(chat.STEPS.location,/current locality/);assert.match(chat.STEPS.landmark,/Google Maps/);
+});
+test('labour intake asks actual tasks, site, date, number of people and duration without issuing a price',()=>{
+ const m=[{role:'user',content:'Labour chahiye'}];assert.equal(chat.refineStep('scope',m),'work');
+ m.push({role:'assistant',content:chat.STEPS.work},{role:'user',content:'Electrical cable unloading'});assert.equal(chat.refineStep('make',m),'location');
+ m.push({role:'assistant',content:chat.STEPS.location},{role:'user',content:'Mumbra near Bilal hospital'});assert.equal(chat.refineStep('handoff',m),'date');
+ m.push({role:'assistant',content:chat.STEPS.date},{role:'user',content:'Tomorrow'});assert.equal(chat.refineStep('handoff',m),'team');
+ m.push({role:'assistant',content:chat.STEPS.team},{role:'user',content:'4 helpers'});assert.equal(chat.refineStep('handoff',m),'duration');
+ m.push({role:'assistant',content:chat.STEPS.duration},{role:'user',content:'3 days, 8 hours daily'});assert.equal(chat.refineStep('work',m),'handoff');
+ assert.equal(chat.refineStep('handoff',[{role:'user',content:'civil labour excavation'}]),'outside');
 });
 test('AI can only select a vetted next question, never supply a price, promise, secret or executable content',async()=>{
  let sent;const step=await chat.nextStep([{role:'user',content:'MCB required'}],{key:'test-only',fetcher:async(url,o)=>{sent=JSON.parse(o.body);return {ok:true,json:async()=>({output:[{type:'message',content:[{type:'output_text',text:'{"step":"quantity"}'}]}]})};}});

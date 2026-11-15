@@ -1,13 +1,16 @@
 'use strict';
 const a=require('./enquiry-assistant.cjs');
 const STEPS={
- scope:'Hi! Do you need electrical materials, an electrician or plumbing materials/work?',
+ scope:'Hi! Do you need electrical/plumbing materials, an electrician, plumber or site technicians/labour? Tell us your requirement.',
  material:'Which material do you need? Please share its name.',
  make:'Which brand/make do you prefer? You can also say “brand open”.',
  size:'What size/specification or rating do you need?',
  quantity:'How much material do you need? Please include the unit, such as pieces or metres.',
- work:'Please describe the electrical/plumbing fault or work required.',
- location:'Which area is the delivery/site in? Please share the area only; use the enquiry form for your full address.',
+ work:'What exact work is required? Please describe the repair/installation/job, type of property and number of work points or quantities. For labour, confirm the trade and tasks. Helpful photos can be shared with the office.',
+ location:'Where is the work site/delivery location? Please share your current locality and nearest landmark. Add the full address or Google Maps location link in the enquiry form before sending to our office.',
+ landmark:'Please share the nearest landmark/locality for the work site. Put the full site address or Google Maps link in the enquiry form so our office can review the exact location.',
+ team:'How many technicians/labourers are required, and which trade/skill does each person need?',
+ duration:'For how many days or hours is the team needed? Please include the daily shift/timing.',
  date:'When do you need the material or technician visit?',
  handoff:'Thank you. Use “Send enquiry to HM ELECTRICAL” below and add your contact details. Our team confirms rates, stock, GST, transport and technician availability after review. This chat does not place an order or confirm a booking.',
  price:'Our team confirms the material quotation after checking make, size, quantity and availability. Service charges depend on the work/site. I cannot confirm a final rate or booking here.',
@@ -25,9 +28,21 @@ function fallback(messages){
  if(/\b(price|rate|mrp|cost|discount|kitna|charge)\b/i.test(last))return 'price';
  if(kind==='unclear')return 'scope';
  if(kind==='outside')return 'outside';
- const location=/\b(mumbai|mumbra|thane|sion|borivali|kurla|andheri|bandra|navi mumbai|turbhe|khardi|dadar|worli|worali|powai|kalyan|dombivli|bhiwandi|panvel|vashi|mulund)\b/i.test(users);
- const date=/\b(today|tomorrow|urgent|asap|aaj|kal|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\d{1,2}[/-]\d{1,2}/i.test(users);
- if(kind.endsWith('-work'))return !location?'location':!date?'date':'handoff';
+ const answered=step=>messages.some((m,i)=>m.role==='assistant'&&m.content===STEPS[step]&&messages[i+1]?.role==='user'&&messages[i+1].content.trim().length>2&&!/^(?:no|nope|not sure|pata nahi|later|skip|idk)[.! ]*$/i.test(messages[i+1].content.trim()));
+ const location=/\b(mumbai|mumbra|thane|sion|borivali|kurla|andheri|bandra|navi mumbai|turbhe|khardi|kausa|dadar|worli|worali|powai|kalyan|dombivli|bhiwandi|panvel|vashi|mulund)\b/i.test(users)||answered('location');
+ const date=/\b(today|tomorrow|urgent|asap|aaj|kal|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\d{1,2}[/-]\d{1,2}/i.test(users)||answered('date');
+ if(kind.endsWith('-work')){
+  const work=/leak|tripp|sparking|short circuit|blocked|blockage|rewiring|wiring|installation|install |replace|repair.*(?:fan|switch|tap|pipe)|(?:fan|switch|tap|pipe).*repair|cable lay|termination|welding|fabrication|unloading|fitting|cleaning|maintenance|kharab/i.test(users)||answered('work');
+  if(!work)return 'work';if(!location)return 'location';
+  if(!/\b(near|nearby|landmark|road|nagar|hospital|society|station|building|hotel|tower|apartment)\b|ke paas/i.test(users)&&!answered('landmark'))return 'landmark';
+  if(!date)return 'date';
+  const crew=kind==='labour-work'||/\b(labou?r|manpower|team|workers|people)\b|\b\d+\s*(?:plumbers|electricians|technicians|helpers|fitters|welders)\b/i.test(users);
+  if(crew){
+   if(!/\b(?:\d+|one|two|three|four|ek|do|teen|char)\s*(?:technicians?|labou?r\w*|workers?|people|persons?|plumbers?|electricians?|helpers?|fitters?|welders?|riggers?|supervisors?|admi|bande)\b/i.test(users)&&!answered('team'))return 'team';
+   if(!/\b\d+\s*(?:days?|hours?|weeks?|months?|din|ghant\w*|mahine)\b/i.test(users)&&!answered('duration'))return 'duration';
+  }
+  return 'handoff';
+ }
  const make=/\b(ashirvad|ashirwad|astral|supreme|ajay|polycab|finolex|havells|anchor|panasonic|legrand|schneider|braco|lauritz|knudsen|brand open|any brand|any make|no preference)\b/i.test(users)||messages.some((m,i)=>m.role==='assistant'&&m.content===STEPS.make&&messages[i+1]?.role==='user'&&messages[i+1].content.length<100&&!/\b(price|rate|cost|kitna|charge|why|what|which)\b|\?/i.test(messages[i+1].content));
  if(!make)return 'make';
  if(!/\d+(?:\.\d+)?\s*(mm|inch|inches|sq\s*mm|amp|a\b|watt|w\b)/i.test(users))return 'size';
@@ -44,12 +59,9 @@ async function nextStep(messages,{key,fetcher=fetch}={}){
 function refineStep(step,messages){
  const users=messages.filter(m=>m.role==='user').map(m=>m.content).join(' ');
  const next=fallback(messages);
+ if(next==='outside')return 'outside';
  if(next==='price')return 'price';
- if(a.topic(users).endsWith('-work')){
-  if(step==='work'&&/leak|tripp|sparking|short circuit|blocked|blockage|rewiring|wiring|installation|switch replace|fan repair|tap replace/i.test(users))return next;
-  if(step==='location'&&['date','handoff'].includes(next))return next;
-  if(step==='date'&&next==='handoff')return next;
- }
+ if(a.topic(users).endsWith('-work'))return next;
  // The model may ask for a pressure class after a supplied pipe size. Keep the
  // conversation moving; the final specification/quote is always reviewed by staff.
  if(/\b(cpvc|upvc|pvc|pipe|mcb|mccb|switch|light|led)\b/i.test(users)&&!/cable|wire/i.test(users)){

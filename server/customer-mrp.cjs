@@ -35,8 +35,8 @@ function text(rows){
  if(!rows.length)return 'Please share the exact brand, material name, size and grade/model. I can share an available verified printed MRP reference; where no matching MRP is available our office will confirm it. Final selling rates and all service charges are confirmed by HM ELECTRICAL after review.';
  const line=r=>`${r.brand} ${r.name.slice(0,95)} | ${r.size.slice(0,75)}: Rs ${r.mrp.toFixed(2)}/${r.unit}${r.effectiveDate?' (list '+r.effectiveDate+')':''}`;
  const suffix='\nPrinted list references only; final selling rates, tax basis, stock and transport require HM ELECTRICAL confirmation.';
- let answer='MRP reference only (INR; listed variants):\n'+rows.map(line).join('\n')+suffix;
- if(answer.length>650)answer='MRP reference only (INR; one matching variant):\n'+line(rows[0])+suffix;
+ let answer='HM ELECTRICAL material MRP reference only (INR; listed variants):\n'+rows.map(line).join('\n')+suffix;
+ if(answer.length>650)answer='HM ELECTRICAL material MRP reference only (INR; one matching variant):\n'+line(rows[0])+suffix;
  return answer;
 }
 module.exports={normal,select,references,text};

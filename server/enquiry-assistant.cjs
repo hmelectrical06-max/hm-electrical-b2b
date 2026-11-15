@@ -1,12 +1,14 @@
 'use strict';
 const crypto=require('node:crypto');
 const CALLBACK='8085560156', MODEL='gpt-4.1-mini-2025-04-14';
-const POLICY=Object.freeze({scope:['Electrical materials','Electrical work','Plumbing materials and work'],ownerEmail:'hmelectrical06@gmail.com',ownerMobile:CALLBACK,mobileChannel:'whatsapp',mobileStatus:'connection-required',customerAutoSend:false});
+const POLICY=Object.freeze({scope:['Electrical materials','Electrical work','Plumbing materials and work','Site technicians and labour enquiries'],ownerEmail:'hmelectrical06@gmail.com',ownerMobile:CALLBACK,mobileChannel:'whatsapp',mobileStatus:'connection-required',customerAutoSend:false});
 function topic(value){
  const q=clean(value).toLowerCase();
  if(/\b(civil|shutter\w*|reinforcement|pile|excavation|masonry|concrete|hvac|fire fighting|firefighting)\b/.test(q))return 'outside';
+ if(/\bplumbing\s+(materials?|items?)\b/.test(q)&&!/\b(plumber|repair|installation|work|leak\w*)\b/.test(q))return 'plumbing-material';
  if(/\b(plumb\w*|leak\w*|tap|faucet|flush|drain\w*|water repair)\b/.test(q))return 'plumbing-work';
  if(/\b(electrician|wiring|rewir\w*|electrical work|electrical repair|short circuit|power failure|fan repair|switch repair)\b/.test(q))return 'electrical-work';
+ if(/\b(technician\w*|labou?r\w*|helper\w*|welder\w*|rigger\w*|fitter\w*|supervisor\w*|workers?|manpower)\b/.test(q))return 'labour-work';
  if(/\b(cpvc|upvc|pvc|pipe\w*|fitting\w*|sanitary\w*|bathroom|valve\w*|elbow|tee|reducer|socket)\b/.test(q))return 'plumbing-material';
  if(/\b(electrical|cable\w*|wire\w*|switch\w*|mcb|mccb|rcbo|rccb|light\w*|led|conduit|gland\w*|earthing|lug\w*|fan)\b/.test(q))return 'electrical-material';
  return 'unclear';
@@ -26,9 +28,9 @@ function template(lead){
  const name=clean(lead.name,120).replace(/[<>\r\n]/g,' '),requirement=clean(lead.details);
  const kind=topic(requirement);
  if(kind==='outside'||kind==='unclear')return `Hi ${name}, HM ELECTRICAL handles electrical materials, electrical work and plumbing requirements. Please confirm which of these you need, along with your location. Our team will review your enquiry.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
- if(kind.endsWith('-work'))return `Hi ${name}, this is Asif from HM ELECTRICAL regarding your ${kind==='plumbing-work'?'plumbing':'electrical work'} enquiry. Please share the fault/work details, site location, preferred visit date and any helpful photos. Our team will confirm technician availability and charges after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
+ if(kind.endsWith('-work'))return `Hi ${name}, this is HM ELECTRICAL regarding your ${kind==='plumbing-work'?'plumbing':kind==='labour-work'?'technician/labour':'electrical work'} enquiry. Please share the fault/work details, site location, preferred visit date and any helpful photos. Our team will confirm technician availability and charges after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
  const cable=/cable|wire/i.test(requirement);
- return `Hi ${name}, this is Asif from HM ELECTRICAL regarding your enquiry. Please share ${cable?'the cable make, number of cores, exact size in sq mm, armoured/unarmoured type, quantity with unit':'the material list, preferred make, size/specification and quantity with unit'}, delivery location and required date. We will check availability and prepare our best quotation. For services, charges will be confirmed after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
+ return `Hi ${name}, this is HM ELECTRICAL regarding your enquiry. Please share ${cable?'the cable make, number of cores, exact size in sq mm, armoured/unarmoured type, quantity with unit':'the material list, preferred make, size/specification and quantity with unit'}, delivery location and required date. We will check availability and prepare our best quotation. For services, charges will be confirmed after reviewing the work/site.\nHM ELECTRICAL | ${CALLBACK} | https://hmelectricalb2b.com/`;
 }
 function publicProduct(p){return {id:clean(p.id||p.product_id,80),name:clean(p.name,200),size:clean(p.size,150),brand:clean(p.brand,100),category:clean(p.category,100),unit:clean(p.unit,30)};}
 function matches(query,products){

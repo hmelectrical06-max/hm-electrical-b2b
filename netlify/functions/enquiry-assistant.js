@@ -19,7 +19,8 @@ exports.handler=c.safe(async e=>{
   step=chat.refineStep(step,messages);
   if(step==='price'){
    const mrp=require('../../server/customer-mrp.cjs');let refs=[];
-   if(!a.topic(messages.filter(m=>m.role==='user').map(m=>m.content).join(' ')).endsWith('-work'))try{refs=await mrp.references(messages.filter(m=>m.role==='user').map(m=>m.content).join(' '));}catch{/* Missing catalogue evidence must never become a guessed price. */}
+   if(a.topic(messages.filter(m=>m.role==='user').map(m=>m.content).join(' ')).endsWith('-work'))return c.reply(200,{ok:true,mode,step,reply:'Technician/labour charges depend on the actual work and site. Please share the work details, current site locality/landmark, required date, team size and duration. HM ELECTRICAL will review and confirm the final charges and availability. No booking is confirmed here.',handoff:false,products:[]});
+   try{refs=await mrp.references(messages.filter(m=>m.role==='user').map(m=>m.content).join(' '));}catch{/* Missing catalogue evidence must never become a guessed price. */}
    return c.reply(200,{ok:true,mode,step,reply:mrp.text(refs),handoff:false,products:[],mrpReferences:refs});
   }
   return c.reply(200,{ok:true,mode,step,reply:chat.replyFor(step,messages),handoff:step==='handoff',products:[]});
