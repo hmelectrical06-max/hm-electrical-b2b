@@ -13,6 +13,11 @@ test('pipe dimensions already supplied are not requested again, and cable-specif
  m[2].content='Other preferred brand';assert.equal(chat.refineStep('make',m),'quantity');
  assert.match(chat.replyFor('size',[{role:'user',content:'copper cable'}]),/remaining specifications/);
 });
+test('service faults, area and date already supplied do not get asked for again',()=>{
+ const m=[{role:'user',content:'Mumbra me bathroom tap se paani leak ho raha hai. Kal plumber chahiye.'}];
+ for(const step of ['work','location','date'])assert.equal(chat.refineStep(step,m),'handoff');
+ assert.equal(chat.refineStep('work',[{role:'user',content:'plumber chahiye'}]),'work');
+});
 test('AI can only select a vetted next question, never supply a price, promise, secret or executable content',async()=>{
  let sent;const step=await chat.nextStep([{role:'user',content:'MCB required'}],{key:'test-only',fetcher:async(url,o)=>{sent=JSON.parse(o.body);return {ok:true,json:async()=>({output:[{type:'message',content:[{type:'output_text',text:'{"step":"quantity"}'}]}]})};}});
  assert.equal(step,'quantity');assert.equal(sent.store,false);assert.equal(sent.max_output_tokens,120);assert.equal(sent.text.format.strict,true);assert.equal(sent.tools,undefined);

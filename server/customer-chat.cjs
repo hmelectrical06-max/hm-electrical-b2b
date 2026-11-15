@@ -43,10 +43,16 @@ async function nextStep(messages,{key,fetcher=fetch}={}){
 }
 function refineStep(step,messages){
  const users=messages.filter(m=>m.role==='user').map(m=>m.content).join(' ');
+ const next=fallback(messages);
+ if(a.topic(users).endsWith('-work')){
+  if(step==='work'&&/leak|tripp|sparking|short circuit|blocked|blockage|rewiring|wiring|installation|switch replace|fan repair|tap replace/i.test(users))return next;
+  if(step==='location'&&['date','handoff'].includes(next))return next;
+  if(step==='date'&&next==='handoff')return next;
+ }
  // The model may ask for a pressure class after a supplied pipe size. Keep the
  // conversation moving; the final specification/quote is always reviewed by staff.
  if(/\b(cpvc|upvc|pvc|pipe|mcb|mccb|switch|light|led)\b/i.test(users)&&!/cable|wire/i.test(users)){
-  const order=['make','size','quantity','location','date','handoff'],next=fallback(messages),index=order.indexOf(step);
+  const order=['make','size','quantity','location','date','handoff'],index=order.indexOf(step);
   if(index>=0&&index<=2&&order.indexOf(next)>index)return next;
  }
  return step;
