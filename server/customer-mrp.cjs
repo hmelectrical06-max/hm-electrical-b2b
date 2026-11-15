@@ -23,7 +23,7 @@ function select(query,rows){
   if(!words.every(w=>text.split(' ').includes(w)))return false;
   for(const grade of q.matchAll(/\b(sdr|sch|class)\s*(\d+(?:\.\d+)?)/g))if(!new RegExp('\\b'+grade[1]+'\\s*'+grade[2].replace('.','\\.')+'\\b').test(text))return false;
   if(dimensions.length){const nums=sizes(r.material.specification);if(dimensions.length!==nums.length||dimensions.some((n,i)=>n!==nums[i]))return false;}
-  const length=String(query).toLowerCase().match(/\b(\d+(?:\.\d+)?)\s*(?:mtr|m)\b/);if(length&&!new RegExp('\\b'+length[1].replace('.','\\.')+'\\s*(?:mtr|m)\\b').test(text))return false;
+  const length=String(query).toLowerCase().match(/\b(\d+(?:\.\d+)?)\s*(?:mtr|m)\b/);if(length&&([3,5,6].includes(Number(length[1]))||/length|long/i.test(query))&&!new RegExp('\\b'+length[1].replace('.','\\.')+'\\s*(?:mtr|m)\\b').test(text))return false;
   return true;
  }).sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand&&x.material.name===r.material.name&&x.material.specification===r.material.specification&&x.material.unit===r.material.unit)===i).map(r=>({name:r.material.name,size:r.material.specification,unit:r.material.unit,brand:r.brand,mrp:Number(r.printed_mrp),effectiveDate:r.effective_date||null,sku:/^700\d{5}$/.test(r.manufacturer_sku||'')?r.manufacturer_sku:null})).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand)===i).slice(0,3);
 }
