@@ -1,252 +1,317 @@
 {
+  "sourceDate": "28 October 2026",
+  "projectSource": "/company-projects.html",
+  "teamSource": "/company-team.html",
   "projects": [
     {
       "name": "BHOOMI MALL BHIVANDI",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "DAMANI BOROVALI FF",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "SANAD AHMEDABAD",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "VIKHROLI HVAC",
-      "detail": "TECH INDIA ELECTROSOLUTIONS"
+      "detail": "TECH INDIA ELECTROSOLUTIONS",
+      "status": "Running"
     },
     {
       "name": "BOROVALI SKY CITY HOTEL ELECTRICAL",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "DAMANI BOROVALI PHE",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "WMUP-360",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "YOTA PANVEL",
-      "detail": "TECH INDIA ELECTROSUTIONS"
+      "detail": "TECH INDIA ELECTROSUTIONS",
+      "status": "Running"
     },
     {
       "name": "GOREGAON",
-      "detail": "BLUE STAR PVT LTD"
+      "detail": "BLUE STAR PVT LTD",
+      "status": "Running"
     },
     {
       "name": "SKY CITY HOTAL FIRE FIGHTING",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Running"
     },
     {
       "name": "PUNE KOPA MALL",
-      "detail": "BLUE STAR PVT LTD"
+      "detail": "BLUE STAR PVT LTD",
+      "status": "Running"
     },
     {
       "name": "PUNE NANDAN",
-      "detail": "TECH INDIA ELECTROSULOTIONS"
+      "detail": "TECH INDIA ELECTROSULOTIONS",
+      "status": "Running"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-9, THANE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "HYDRABAD D MAR STORE POINT-14, GACHIBAULI",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "GUJRAT D MAR STORE POINT-15, PALANPUR",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "HARYANA GURGAON VERTIVE UPS SYESTEM",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "KHARGHAR REALINCE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "TATA POWER VIKHROLI EARTH CHEMBER",
-      "detail": "PERFECT POWER TRANSMISSION"
+      "detail": "PERFECT POWER TRANSMISSION",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-6,GOREGAON",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE NANDAN PROVIESED",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUMPING GOVERNMENT SERVICES MAHIM PUMPING",
-      "detail": "NETWORK TECH LAB PVT LTD"
+      "detail": "NETWORK TECH LAB PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI WADIYA HOSPITAL",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE MALPANI",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-1, DADAR",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-7,DAHISAR",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "HOH HEERA NANDANEE",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "THANE DATA CENTER",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-4,ULWE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "RABALE AMAZON",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "AIROLI GIS CABLE LYING",
-      "detail": "PERFECT POWER TRANSMISSION"
+      "detail": "PERFECT POWER TRANSMISSION",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-2, ULWE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE D MAR PICKUP POINT-10, PUNE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-8, WASHI",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BSE SHAREMARCKET DC-9",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BSE SHAREMARCKET DC-5",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BSE SHAREMARCKET DC-3",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR STORE POINT-13, BANGLURU",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "JUI NAGAR NPLP GIS SUBSTATION 33KVA GIS-6",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE EXTRA PROJECTS -1",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "AIROLI GIS SUBSTATION 33KVA GIS-1 DIGHA",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "AMBERNATH VERTIVE SHUTDOWN ACTIVITY",
-      "detail": "VERTIVE"
+      "detail": "VERTIVE",
+      "status": "Completed"
     },
     {
       "name": "NAIK TOWER L@T POWAI",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BHUNESWAR RBI DATA CENTER FF",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BSE SHAREMARCKET DC-7/8",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "AIROLI GIS SUBSTATION 33KVA GIS-3 DIGHA",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE EXTRA PROJECTS -3",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "NSE SHARE MARCKET VKC NSE",
-      "detail": "NETWORK TECH LAB PVT LTD"
+      "detail": "NETWORK TECH LAB PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "LEELA LAUNDRY",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE EXTRA PROJECTS -2",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-5,DHARAVI",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "BSE SHAREMARCKET DC-4",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE D MAR PICKUP POINT-12, PUNE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "THANE MAHANT CHEMBER THANE WAGLE STATE",
-      "detail": "VAISHALI ENTERPRIESES"
+      "detail": "VAISHALI ENTERPRIESES",
+      "status": "Completed"
     },
     {
       "name": "PUMPING GOVERNMENT SERVICES BANGANGA PUMPING",
-      "detail": "NETWORK TECH LAB PVT LTD"
+      "detail": "NETWORK TECH LAB PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "AIROLI GIS SUBSTATION 33KVA GIS-2 DIGHA",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE D MAR PICKUP POINT-11, PUNE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "THANE MAHANT CHEMBER",
-      "detail": "VAISHALI ENTERPRIESES"
+      "detail": "VAISHALI ENTERPRIESES",
+      "status": "Completed"
     },
     {
       "name": "PUNE ELECTRICAL HVAC PNV-1",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PREL WEST LODHA T-4 BUILDING",
-      "detail": "BLUE STAR LIMITED"
+      "detail": "BLUE STAR LIMITED",
+      "status": "Completed"
     },
     {
       "name": "PUNE ELECTRICAL HVAC PNV-2",
-      "detail": "Client not listed"
+      "detail": "Client not listed",
+      "status": "Completed"
     },
     {
       "name": "MUMBAI D MAR PICKUP POINT-3,ULWE",
-      "detail": "TANVI ENGNEERING CORPORATION PVT LTD"
+      "detail": "TANVI ENGNEERING CORPORATION PVT LTD",
+      "status": "Completed"
     },
     {
       "name": "PUNE NANDAN PRASPRA BUILDING BESMENT FLOOR",
-      "detail": "TECH INDIA ELECTROSULOTION PVT LTD"
+      "detail": "TECH INDIA ELECTROSULOTION PVT LTD",
+      "status": "Completed"
     }
   ],
   "team": [
@@ -256,11 +321,11 @@
     },
     {
       "name": "Mohammad Arif",
-      "detail": "Electrical Site Supervisor Site reference: Bhoomi Mall, Bhiwandi A long-standing member of HM ELECTRICAL, supervising electrical work and day-to-day site maintenance at Bhoomi Mall"
+      "detail": "Electrical Site Supervisor Site reference: Bhoomi Mall, Bhiwandi A long-standing member of HM ELECTRICAL, supervising electrical work and day-to-day site maintenance at Bhoomi Mall, Bhiwandi."
     },
     {
       "name": "Ranjit Kumar Kushwaha",
-      "detail": "Fire Fighting Site Supervisor Site reference: CG Sanad, Ahmedabad A long-standing member of HM ELECTRICAL, overseeing fire-fighting work and supporting daily site coordination at C"
+      "detail": "Fire Fighting Site Supervisor Site reference: CG Sanad, Ahmedabad A long-standing member of HM ELECTRICAL, overseeing fire-fighting work and supporting daily site coordination at CG Sanad, Ahmedabad."
     },
     {
       "name": "Saidurrahman",

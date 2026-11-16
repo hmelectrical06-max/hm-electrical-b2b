@@ -1,8 +1,8 @@
 'use strict';
 const c=require('./core.cjs');
-let cache,expires=0;
+let cache,expires=0,pending;
 const normal=s=>String(s||'').toLowerCase().replace(/ashirwad/g,'ashirvad').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9.]+/g,' ').trim();
-const STOP=new Set('required needed supply quote quotation price prices rate rates mrp cost discount final kya hai ka ki ke mujhe chahiye batao please tell me what is the a an for of in do you have need want kitna material metre metres meter meters pcs nos mm cm inch inches mtr x'.split(' '));
+const STOP=new Set('required needed supply quote quotation price prices rate rates mrp cost discount final kya hai ka ki ke mujhe chahiye batao please tell me what is the a an for of in do you have need want kitna material metre metres meter meters pcs nos piece pieces roll rolls coil coils box boxes kg litre litres mm cm inch inches mtr x'.split(' '));
 function sizes(s){
  const value=String(s).toLowerCase().replace(/[×]/g,'x').replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4');
  const metric=value.match(/((?:\d+(?:\.\d+)?\s*x\s*)*\d+(?:\.\d+)?)\s*(mm|cm)\b/);
@@ -28,7 +28,7 @@ function select(query,rows){
  }).sort((a,b)=>String(b.effective_date).localeCompare(String(a.effective_date))).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand&&x.material.name===r.material.name&&x.material.specification===r.material.specification&&x.material.unit===r.material.unit)===i).map(r=>({name:r.material.name,size:r.material.specification,unit:r.material.unit,brand:r.brand,mrp:Number(r.printed_mrp),effectiveDate:r.effective_date||null,sku:/^700\d{5}$/.test(r.manufacturer_sku||'')?r.manufacturer_sku:null})).filter((r,i,list)=>list.findIndex(x=>x.brand===r.brand)===i).slice(0,3);
 }
 async function references(query){
- if(!cache||Date.now()>expires){let rows=[];for(let offset=0;offset<5000;offset+=500){const page=await c.db('hm_supplier_price_rows?select=brand,printed_mrp,review_status,manufacturer_sku,effective_date,material:hm_material_master!inner(name,specification,unit)&review_status=eq.Verified%20reference&order=id&limit=500&offset='+offset);rows.push(...page);if(page.length<500)break;}cache=rows;expires=Date.now()+120000;}
+ if(!cache||Date.now()>expires){if(!pending)pending=require('./live-catalogue.cjs').all('hm_supplier_price_rows?select=brand,printed_mrp,review_status,manufacturer_sku,effective_date,material:hm_material_master!inner(name,specification,unit)&review_status=eq.Verified%20reference&order=id').then(rows=>{cache=rows;expires=Date.now()+120000;}).finally(()=>{pending=null;});await pending;}
  return select(query,cache);
 }
 function text(rows,{max=650}={}){

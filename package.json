@@ -8,7 +8,7 @@
     "dev": "npm run build && netlify dev",
     "dev:test": "node scripts/start-test-env.cjs",
     "dev:check": "node scripts/check-dev-env.cjs",
-    "build": "node scripts/check.cjs && node scripts/build-site.cjs",
+    "build": "node scripts/build-chat-knowledge.cjs && node scripts/check.cjs && node scripts/build-site.cjs",
     "test": "node --test tests/*.test.cjs"
   },
   "devDependencies": {
