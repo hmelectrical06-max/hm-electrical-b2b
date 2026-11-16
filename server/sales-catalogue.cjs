@@ -8,7 +8,8 @@ const META='product_id,brand,manufacturer_sku,specifications,mrp,mrp_source_url,
 let cache,expires=0,pending;
 function publicView(p,m={}){
  const brand=clean(m.brand||p.brand,80),verifiedMrp=number(m.mrp)>0&&m.mrp_source_url&&m.mrp_verified_at;
- const out={id:clean(p.id,80),name:clean(p.name,140),size:clean(m.specifications||p.size,180),unit:clean(p.unit,30),brand:placeholder(brand)?null:brand,sku:clean(m.manufacturer_sku,100)||null,category:clean(p.category,100),group:clean(p.group,100),sourceCode:clean(p.sourceCode,80),requestedCode:clean(p.requestedCode,80),mrp:verifiedMrp?number(m.mrp):null,sellingPrice:null,minimumQuantity:null,gstRate:null,discountPercent:null,availability:['listed','on_request','out_of_stock','discontinued'].includes(m.availability)?m.availability:'on_request'};
+ const specification=String(m.specifications||'').split(/\b(?:reference image|representative image|photograph is|photo is|pictured size)\b/i)[0].trim()||p.size;
+ const out={id:clean(p.id,80),name:clean(p.name,140),size:clean(specification,180),unit:clean(p.unit,30),brand:placeholder(brand)?null:brand,sku:clean(m.manufacturer_sku,100)||null,category:clean(p.category,100),group:clean(p.group,100),sourceCode:clean(p.sourceCode,80),requestedCode:clean(p.requestedCode,80),mrp:verifiedMrp?number(m.mrp):null,sellingPrice:null,minimumQuantity:null,gstRate:null,discountPercent:null,availability:['listed','on_request','out_of_stock','discontinued'].includes(m.availability)?m.availability:'on_request'};
  // A stored buying price or internal markup plan is never a customer selling price.
  if(m.public_price_mode==='retail'&&number(m.retail_price)>0)out.sellingPrice=number(m.retail_price);
  if(m.public_price_mode==='wholesale'&&number(m.wholesale_price)>0){out.sellingPrice=number(m.wholesale_price);out.minimumQuantity=number(m.minimum_wholesale_quantity);}
