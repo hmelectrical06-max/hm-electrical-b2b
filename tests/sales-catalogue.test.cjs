@@ -3,9 +3,9 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),s=require
 const p=(id,name,size,extra={})=>({id,name,size,unit:'Nos',brand:null,mrp:null,sellingPrice:null,...extra});
 test('pricing projection publishes only verified MRP, explicitly public selling prices and verified tax references',()=>{
  const row={id:'A-1',name:'MCB SP',size:'63A',quotePrice:7,marketRate:8,purchase_price:1,discount_percent:65,mrp:999};
- const basic=s.publicView(row,{purchase_price:1,retail_price:10,public_price_mode:'request',mrp:200});assert.equal(basic.mrp,null);assert.equal(basic.sellingPrice,null);assert.doesNotMatch(JSON.stringify(basic),/purchase|discount|quotePrice|marketRate/);
+ const basic=s.publicView(row,{purchase_price:1,retail_price:10,public_price_mode:'request',mrp:200});assert.equal(basic.mrp,null);assert.equal(basic.sellingPrice,null);assert.doesNotMatch(JSON.stringify(basic),/purchase|discount_percent|quotePrice|marketRate/);
  const verified={mrp:200,mrp_source_url:'https://manufacturer.example/list.pdf',mrp_verified_at:'2026-11-01',retail_price:150,public_price_mode:'retail',gst_rate:18,tax_source_url:'https://gst.example/reference',tax_verified_at:'2026-11-01'};
- const out=s.publicView(row,verified);assert.equal(out.mrp,200);assert.equal(out.sellingPrice,150);assert.equal(out.gstRate,18);
+ const out=s.publicView(row,verified);assert.equal(out.mrp,200);assert.equal(out.sellingPrice,150);assert.equal(out.gstRate,18);assert.equal(out.discountPercent,25);
  assert.equal(s.publicView(row,{...verified,public_price_mode:'request',tax_verified_at:null}).sellingPrice,null);assert.equal(s.publicView(row,{...verified,tax_verified_at:null}).gstRate,null);
 });
 test('size, product family, grade, length, brand and code remain exact; quantity does not become a size',()=>{
@@ -18,3 +18,5 @@ test('hidden product codes, unrelated substring matches and wire accessories can
 });
 
 test('inch fractions and metric dimensions are matched without treating quantities as product specifications',()=>{const rows=[p('P-15','CPVC Pipe','15 mm'),p('P-50','CPVC Pipe','50 mm')];assert.deepEqual(s.search('CPVC pipe 1/2 inch 100 boxes',rows).map(p=>p.id),['P-15']);assert.deepEqual(s.search('CPVC pipe ½ inch 100 coils',rows).map(p=>p.id),['P-15']);});
+
+test('related catalogue suggestions use actual public identities without promising compatibility or exposing price plans',()=>{const rows=[p('E-1','CPVC Elbow','25 mm'),p('T-1','CPVC Tee','25 mm'),p('W-1','Wire','2.5 sqmm')];const suggestions=s.related('CPVC pipe',rows);assert.equal(suggestions.length,2);assert.deepEqual(suggestions.map(p=>p.id),['E-1','T-1']);assert.doesNotMatch(JSON.stringify(suggestions),/purchase|discount|price|stock/);});

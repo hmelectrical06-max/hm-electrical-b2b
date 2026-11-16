@@ -8,20 +8,21 @@ const META='product_id,brand,manufacturer_sku,specifications,mrp,mrp_source_url,
 let cache,expires=0,pending;
 function publicView(p,m={}){
  const brand=clean(m.brand||p.brand,80),verifiedMrp=number(m.mrp)>0&&m.mrp_source_url&&m.mrp_verified_at;
- const out={id:clean(p.id,80),name:clean(p.name,140),size:clean(m.specifications||p.size,180),unit:clean(p.unit,30),brand:placeholder(brand)?null:brand,sku:clean(m.manufacturer_sku,100)||null,category:clean(p.category,100),group:clean(p.group,100),sourceCode:clean(p.sourceCode,80),requestedCode:clean(p.requestedCode,80),mrp:verifiedMrp?number(m.mrp):null,sellingPrice:null,minimumQuantity:null,gstRate:null};
+ const out={id:clean(p.id,80),name:clean(p.name,140),size:clean(m.specifications||p.size,180),unit:clean(p.unit,30),brand:placeholder(brand)?null:brand,sku:clean(m.manufacturer_sku,100)||null,category:clean(p.category,100),group:clean(p.group,100),sourceCode:clean(p.sourceCode,80),requestedCode:clean(p.requestedCode,80),mrp:verifiedMrp?number(m.mrp):null,sellingPrice:null,minimumQuantity:null,gstRate:null,discountPercent:null,availability:['listed','on_request','out_of_stock','discontinued'].includes(m.availability)?m.availability:'on_request'};
  // A stored buying price or internal markup plan is never a customer selling price.
  if(m.public_price_mode==='retail'&&number(m.retail_price)>0)out.sellingPrice=number(m.retail_price);
  if(m.public_price_mode==='wholesale'&&number(m.wholesale_price)>0){out.sellingPrice=number(m.wholesale_price);out.minimumQuantity=number(m.minimum_wholesale_quantity);}
  if(m.tax_source_url&&m.tax_verified_at&&number(m.gst_rate)!==null&&number(m.gst_rate)<=100)out.gstRate=number(m.gst_rate);
+ if(out.mrp>0&&out.sellingPrice!==null&&out.sellingPrice<out.mrp)out.discountPercent=Math.round((out.mrp-out.sellingPrice)/out.mrp*10000)/100;
  return out;
 }
 async function products(){
  if(cache&&Date.now()<expires)return cache;
- if(!pending)pending=(async()=>{const [rows,meta]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select='+META+'&order=product_id')]);const overlay=new Map(meta.map(r=>[r.product_id,r]));const result=rows.filter(p=>!forbidden(p)&&overlay.get(p.id)?.availability!=='discontinued').map(p=>publicView(p,overlay.get(p.id)));cache=result;expires=Date.now()+120000;return result;})().finally(()=>{pending=null;});
+ if(!pending)pending=(async()=>{const [rows,meta]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select='+META+'&order=product_id')]);const overlay=new Map(meta.map(r=>[r.product_id,r]));const result=rows.filter(p=>!forbidden(p)).map(p=>publicView(p,overlay.get(p.id)));cache=result;expires=Date.now()+120000;return result;})().finally(()=>{pending=null;});
  return pending;
 }
 function normal(s){return clean(s,3000).toLowerCase().replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4').replace(/(\d(?:\/\d)?)"/g,'$1 inch').replace(/[×*]/g,'x').replace(/ashirwad/g,'ashirvad').replace(/standerd|standred/g,'standard').replace(/boasch|boash/g,'bosch').replace(/(?:sq\.?\s*mm|sqmm|mm2|mm²)/g,'sqmm').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\bchapsaw\b/g,'chop saw').replace(/\b(?:raducer|reducer)\b/g,'reducer').replace(/\b(?:fashtner|fastner)\b/g,'fastener').replace(/\b(?:wisher|wosher)\b/g,'washer').replace(/\b(?:safty|septi)\b/g,'safety').replace(/\b(?:bulb|lamp)\b/g,'light').replace(/\b(?:labor|mistri)\b/g,'labour').replace(/\bbreaker\b/g,'mcb').replace(/\b(?:coupling)\b/g,'coupler').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9./-]+/g,' ').replace(/\s+/g,' ').trim();}
-const STOP=new Set('hi hello please need needed required requirement requirements want looking supply quote quotation price prices rate rates mrp cost discount final tell me what is are a an the for of in do you have available availability material materials item items product products buy order send show give us mujhe chahiye hai ka ki ke batao kitna pcs pieces piece nos no metres metre meters meter mtr rolls roll coils coil box boxes kg litre litres qty quantity mm cm inch inches sqmm amp amps inch size x'.split(' '));
+const STOP=new Set('hi hello please need needed required requirement requirements want looking supply quote quotation price prices rate rates mrp cost discount final tell me what is are a an the for of in do you have available availability stock not currently out unavailable ready can arrange delivery dispatch mumbai mumbra thane kausa borivali sion worli bhiwandi panvel material materials item items product products buy order send show give us mujhe chahiye hai ka ki ke batao kitna pcs pieces piece nos no metres metre meters meter mtr rolls roll coils coil box boxes kg litre litres qty quantity mm cm inch inches sqmm amp amps inch size x'.split(' '));
 const singular=t=>t.endsWith('ies')?t.slice(0,-3)+'y':t.endsWith('s')&&!t.endsWith('ss')?t.slice(0,-1):t;
 function words(s){return normal(s).split(' ').filter(t=>!STOP.has(t)).map(singular).filter(t=>t&&!STOP.has(t)&&!/^\d+(?:\.\d+)?(?:\/\d+)?$/.test(t));}
 function specs(query){
@@ -62,4 +63,15 @@ function search(query,items){
  }).filter(Boolean).sort((a,b)=>b.score-a.score||a.p.id.localeCompare(b.p.id)).map(r=>r.p);
 }
 function referenceView(r){return {id:r.sku||'',name:clean(r.name,140),size:clean(r.size,180),unit:clean(r.unit,30),brand:placeholder(r.brand)?null:clean(r.brand,80),sku:r.sku||null,mrp:r.mrp,sellingPrice:null,gstRate:null,minimumQuantity:null,reference:true};}
-module.exports={products,publicView,search,normal,specs,referenceView};
+function related(query,items,{alternatives=false}={}){
+ let queries=[];
+ if(alternatives)queries=[normal(query).replace(/\b(?:ashirvad|supreme|ajay|polycab|havells|finolex|braco|bosch|dewalt|ador|legrand|schneider|anchor|lauritz)\b/g,'')];
+ else if(/welding.*machine/i.test(query))queries=['welding rod','safety goggles'];
+ else if(/wire|cable/i.test(query))queries=['conduit','cable lug'];
+ else if(/cpvc.*pipe/i.test(query))queries=['CPVC elbow','CPVC tee'];
+ else if(/pipe/i.test(query))queries=['elbow','coupler'];
+ else if(/fastener|bolt/i.test(query)){const bolt=specs(query).bolt;queries=['washer'+(bolt?' M'+bolt:''),'nut'+(bolt?' M'+bolt:'')];}
+ else if(/mcb|mccb/i.test(query))queries=['distribution board','DIN rail'];
+ const result=[];for(const q of queries){const p=search(q,items).find(p=>!result.some(r=>r.id===p.id));if(p)result.push({id:p.id,name:p.name,size:p.size,brand:p.brand,kind:alternatives?'alternative':'accessory'});}return result.slice(0,2);
+}
+module.exports={products,publicView,search,normal,specs,referenceView,related};

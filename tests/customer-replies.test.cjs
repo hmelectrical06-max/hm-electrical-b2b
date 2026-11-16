@@ -2,8 +2,8 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),r=require('../server/customer-replies.cjs'),c=require('../server/core.cjs');
 const lead={id:'10000000-0000-4000-8000-000000000001',contact_name:'Nazif',trade:'Plumber',quantity:4,site_location:'Kausa Mumbra',required_date:'2026-11-16',duration:'1 day',details:'',consent:true,email:'customer@example.com',status:'New',created_at:'2026-11-15T09:31:43Z'};
 test('customer confirmation keeps the supplied location and team size, asks actual work and leaves every commitment to the office',()=>{
- const p=r.compose('manpower',lead);assert.match(p.text,/^Hi Nazif,/);assert.match(p.text,/4 Plumber/);assert.match(p.text,/Kausa Mumbra/);assert.match(p.text,/Kya kaam hai/);assert.doesNotMatch(p.text,/nearest landmark|preferred time|Google Maps/);assert.match(p.text,/does not confirm a booking/);assert.doesNotMatch(p.text,/this is Asif|bank|payment link|discount.*\d|Rs \d/i);
- for(const change of [{email:''},{consent:false},{status:'Closed'},{trade:'Fire Fitter'},{email:'a@example.com\r\nBcc: victim@example.com'}])assert.equal(r.compose('manpower',{...lead,...change}),null);
+ const p=r.compose('manpower',lead);assert.match(p.text,/^Hi Nazif,/);assert.match(p.text,/4 Plumber/);assert.match(p.text,/Kausa Mumbra/);assert.match(p.text,/brief description of the work/);assert.doesNotMatch(p.text,/nearest landmark|preferred time|Google Maps/);assert.match(p.text,/does not confirm a booking/);assert.doesNotMatch(p.text,/this is Asif|bank|payment link|discount.*\d|Rs \d/i);
+ for(const change of [{email:''},{consent:false},{status:'Closed'},{trade:'Civil Labour'},{email:'a@example.com\r\nBcc: victim@example.com'}])assert.equal(r.compose('manpower',{...lead,...change}),null);
 });
 test('existing customer emails are not bulk queued, repeat submissions cannot replace a stored acknowledgement',async()=>{
  const db=c.db,old={enabled:process.env.HM_CUSTOMER_EMAIL_ENABLED,start:process.env.HM_CUSTOMER_EMAIL_START_AT};let calls=0;
@@ -35,3 +35,5 @@ test('private SQL queue leases once, caps recipient sends and stops ambiguous re
   await db.exec('reset role;set role anon');await assert.rejects(db.query('select * from hm_customer_replies'),/permission denied/);await assert.rejects(db.query('select * from hm_claim_customer_replies()'),/permission denied/);
  }finally{await db.close();}
 });
+
+test('new confirmations are English, include the reference, and support approved fire manpower without enabling Civil',()=>{const fire=r.compose('manpower',{...lead,trade:'Fire Fitter'});assert.match(fire.text,/Reference:/);assert.match(fire.text,/company approval/);assert.doesNotMatch(fire.text,/Aap|hamari|Kya kaam/);assert.equal(r.compose('manpower',{...lead,trade:'Civil Labour'}),null);});
