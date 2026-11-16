@@ -41,10 +41,10 @@ module.exports=function generate(output){
   }
   if(entry.name==='index.html'){
    html=html.replace('<b>984</b><span>Material<br>specifications','<b>'+products.length.toLocaleString('en-IN')+'</b><span>Material<br>specifications').replace('browse all 984 materials here','browse all '+products.length.toLocaleString('en-IN')+' materials here').replace(/Choose from [\d,]+ material specifications/g,'Choose from '+products.length.toLocaleString('en-IN')+' material specifications');
-   const title='HM ELECTRICAL B2B | Materials & Manpower in Mumbai & Mumbra';
-   const description='HM ELECTRICAL supplies electrical materials, cables, MCBs, switches, fire fighting and plumbing materials. Request electricians, plumbers and site labour in Mumbai and Mumbra, Thane.';
+   const title='HM ELECTRICAL B2B | Electrical & Plumbing Materials Mumbai';
+   const description='HM ELECTRICAL B2B supplies electrical and plumbing materials, wires, cables, switches, MCBs, lights and tools. Request material quotes, electricians and plumbers in Mumbai, Mumbra and Thane.';
    html=html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${title}</title>`).replace(/<meta name="description"[^>]*>/i,`<meta name="description" content="${description}">`);
-   const entity={'@context':'https://schema.org','@graph':[{'@type':'LocalBusiness','@id':domain+'/#business',name:'HM ELECTRICAL',alternateName:['HM ELECTRICAL B2B','H M ELECTRICAL'],url:domain+'/',telephone:company.phone,email:company.email,address:{'@type':'PostalAddress',...company.operatingPostalAddress},areaServed:['Mumbai','Mumbra, Thane','Thane']},{'@type':'WebSite','@id':domain+'/#website',url:domain+'/',name:'HM ELECTRICAL B2B',publisher:{'@id':domain+'/#business'}}]};
+   const entity={'@context':'https://schema.org','@graph':[{'@type':'LocalBusiness','@id':domain+'/#business',name:'HM ELECTRICAL',alternateName:['HM ELECTRICAL B2B','H M ELECTRICAL'],url:domain+'/',description,telephone:company.phone,email:company.email,address:{'@type':'PostalAddress',...company.operatingPostalAddress},areaServed:['Mumbai','Mumbra, Thane','Thane']},{'@type':'WebSite','@id':domain+'/#website',url:domain+'/',name:'HM ELECTRICAL B2B',alternateName:['HM ELECTRICAL','H M ELECTRICAL','hmelectricalb2b'],inLanguage:'en-IN',publisher:{'@id':domain+'/#business'}}]};
    html=html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'');
    html=html.replace('</head>',`<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="${domain}/"><meta property="og:type" content="website"><meta property="og:image" content="${domain}/photos/company-profile-2026-cover.jpg"><script type="application/ld+json">${jsonLd(entity)}</script></head>`);
   }
