@@ -10,6 +10,7 @@ function query(messages,{materialHint,serviceIntent}){
   if(materialHint(text)){base=text;continue;}
   if(serviceIntent(text)){base='';continue;}
   if(!base)continue;
+  const model=text.match(/\b(?:bw|cw|bm|a2|e1w)\s*\d+\b/g);if(model)base=base.replace(/\b(?:bw|cw|bm|a2|e1w)\s*\d+\b/g,'')+' '+model.join(' ');
   const make=text.match(brands),dimensions=text.match(size),qty=text.match(quantity),grade=text.match(/\b(?:sdr|sch|class)\s*\d+(?:\.\d+)?\b/g);
   if(make)base=base.replace(brands,'')+' '+make.join(' ');
   if(dimensions)base=base.replace(size,'')+' '+dimensions.join(' ');

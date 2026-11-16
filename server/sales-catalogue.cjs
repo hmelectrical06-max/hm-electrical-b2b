@@ -21,8 +21,8 @@ async function products(){
  if(!pending)pending=(async()=>{const [rows,meta]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select='+META+'&order=product_id')]);const overlay=new Map(meta.map(r=>[r.product_id,r]));const result=rows.filter(p=>!forbidden(p)).map(p=>publicView(p,overlay.get(p.id)));cache=result;expires=Date.now()+120000;return result;})().finally(()=>{pending=null;});
  return pending;
 }
-function normal(s){return clean(s,3000).toLowerCase().replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4').replace(/(\d(?:\/\d)?)"/g,'$1 inch').replace(/[×*]/g,'x').replace(/ashirwad/g,'ashirvad').replace(/standerd|standred/g,'standard').replace(/boasch|boash/g,'bosch').replace(/(?:sq\.?\s*mm|sqmm|mm2|mm²)/g,'sqmm').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\bchapsaw\b/g,'chop saw').replace(/\b(?:raducer|reducer)\b/g,'reducer').replace(/\b(?:fashtner|fastner)\b/g,'fastener').replace(/\b(?:wisher|wosher)\b/g,'washer').replace(/\b(?:safty|septi)\b/g,'safety').replace(/\b(?:bulb|lamp)\b/g,'light').replace(/\b(?:labor|mistri)\b/g,'labour').replace(/\bbreaker\b/g,'mcb').replace(/\b(?:coupling)\b/g,'coupler').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9./-]+/g,' ').replace(/\s+/g,' ').trim();}
-const STOP=new Set('hi hello please need needed required requirement requirements want looking supply quote quotation price prices rate rates mrp cost discount final tell me what is are a an the for of in do you have available availability stock not currently out unavailable ready can arrange delivery dispatch mumbai mumbra thane kausa borivali sion worli bhiwandi panvel material materials item items product products buy order send show give us mujhe chahiye hai ka ki ke batao kitna pcs pieces piece nos no metres metre meters meter mtr rolls roll coils coil box boxes kg litre litres qty quantity mm cm inch inches sqmm amp amps inch size x'.split(' '));
+function normal(s){return clean(s,3000).toLowerCase().replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4').replace(/(\d(?:\/\d)?)"/g,'$1 inch').replace(/[×*]/g,'x').replace(/\b(\d+)\s*c(?:ores?)?\s*[x×*]?\s*(?=\d)/g,'$1 core ').replace(/ashirwad/g,'ashirvad').replace(/standerd|standred/g,'standard').replace(/boasch|boash/g,'bosch').replace(/(?:sq\.?\s*mm|sqmm|mm2|mm²)/g,'sqmm').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\bchapsaw\b/g,'chop saw').replace(/\b(?:raducer|reducer)\b/g,'reducer').replace(/\b(?:fashtner|fastner)\b/g,'fastener').replace(/\b(?:wisher|wosher)\b/g,'washer').replace(/\b(?:safty|septi)\b/g,'safety').replace(/\b(?:bulb|lamp)\b/g,'light').replace(/\b(?:labor|mistri)\b/g,'labour').replace(/\bbreaker\b/g,'mcb').replace(/\b(?:coupling)\b/g,'coupler').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9./-]+/g,' ').replace(/\s+/g,' ').trim();}
+const STOP=new Set('hi hello please need needed required requirement requirements want looking supply quote quotation price prices rate rates mrp cost discount final tell me what is are a an the for of in do you have your our my list listed printed catalogue catalog latest best wholesale retail bulk contractor project available availability stock not currently out unavailable ready can arrange delivery dispatch mumbai mumbra thane kausa borivali sion worli bhiwandi panvel material materials item items product products buy order send show give us mujhe chahiye hai ka ki ke batao kitna pcs pieces piece nos no metres metre meters meter mtr rolls roll coils coil box boxes kg litre litres qty quantity mm cm inch inches sqmm amp amps inch size x'.split(' '));
 const singular=t=>t.endsWith('ies')?t.slice(0,-3)+'y':t.endsWith('s')&&!t.endsWith('ss')?t.slice(0,-1):t;
 function words(s){return normal(s).split(' ').filter(t=>!STOP.has(t)).map(singular).filter(t=>t&&!STOP.has(t)&&!/^\d+(?:\.\d+)?(?:\/\d+)?$/.test(t));}
 function specs(query){
@@ -35,7 +35,7 @@ function specs(query){
  if(!dim)measures.forEach((m,i)=>{if(/^inch/.test(m[2]))sizes[i]=nominal[value(m[1])]||value(m[1])*25.4;});
  const bolt=raw.match(/\bm\s*(\d+)\b/),grade=[...q.matchAll(/\b(sdr|sch|class)\s+(\d+(?:\.\d+)?)/g)].map(m=>[m[1],m[2]]);
  const unit=dim?'linear':measures.some(m=>m[2]==='sqmm')?'area':measures.some(m=>/^(a|amp|amps)$/.test(m[2]))?'current':measures.some(m=>/^(w|watt)$/.test(m[2]))?'power':sizes.length?'linear':null;
- return {size:sizes.length>0||!!bolt,qty:/\b\d+(?:\.\d+)?\s*(?:pcs|pieces?|nos?|metres?|meters?|mtr|rolls?|coils?|boxes?|kg|litres?)\b/.test(raw),sizes,unit,bolt:bolt?Number(bolt[1]):null,grade};
+ return {size:sizes.length>0||!!bolt,qty:/\b\d+(?:\.\d+)?\s*(?:pcs|pieces?|nos?|metres?|meters?|mtr|rolls?|coils?|boxes?|kg|litres?)\b/.test(raw),sizes,unit,cores:q.match(/\b(\d+)\s*cores?\b/)?.[1]||null,bolt:bolt?Number(bolt[1]):null,grade};
 }
 function search(query,items){
  const q=normal(query),terms=words(query),requested=specs(query);
@@ -53,10 +53,11 @@ function search(query,items){
   if(requested.bolt&&!new RegExp('\\bm\\s*'+requested.bolt+'\\b').test(all))return null;
   const stored=specs(p.size),actual=stored.size?stored:specs(p.name);
   if(requested.unit&&actual.unit&&requested.unit!==actual.unit)return null;
+  if(requested.cores&&requested.cores!==actual.cores)return null;
   if(requested.sizes.length&&(requested.sizes.length!==actual.sizes.length||requested.sizes.some((v,i)=>v!==actual.sizes[i])))return null;
   if(requested.grade.some(([key,n])=>!new RegExp('\\b'+key+'\\s*'+n.replace('.','\\.')+'\\b').test(all)))return null;
   const length=q.match(/\b([356])\s*(?:m|mtr)\b/);if(length&&!new RegExp('\\b'+length[1]+'\\s*(?:m|mtr)\\b').test(all))return null;
-  if(/\bwire\b/.test(q)&&!/rope|brush|clip|binding/i.test(q)&&/rope|brush|clip|binding/.test(name))return null;
+  if(/\b(?:wire|cable)\b/.test(q)&&!/rope|brush|clip|binding|stripper|cutter|puller|marker|tie|lug|terminal|connector/i.test(q)){if(!/\b(?:wire|cable)\b/.test(name)||/rope|brush|clip|binding|stripper|cutter|puller|marker|tie|lug|terminal|connector/.test(name))return null;}
   if(/anchor\s+fastener/.test(q)&&!/nut|washer/.test(q)&&/nut|washer/.test(name))return null;
   const score=nameTerms.reduce((v,t)=>v+(name.split(' ').map(singular).includes(t)?4:1),0)+(p.mrp?2:0)+(p.sellingPrice?2:0)-name.length/1000;
   return {p,score};
