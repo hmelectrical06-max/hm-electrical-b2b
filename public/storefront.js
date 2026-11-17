@@ -23,6 +23,8 @@
   $('store').scrollIntoView({behavior:'smooth'});
  }
  const grid = $('storefrontCategories');
+ // Header search always searches the complete catalogue, including after browsing a category.
+ document.querySelector('.header-search')?.addEventListener('submit', () => $('clear')?.click(), true);
  if (grid) {
   for (const [category,label,asset] of categories) {
    const button = document.createElement('button');
