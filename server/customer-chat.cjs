@@ -18,7 +18,7 @@ const STEPS={
 };
 function history(input){
  if(!Array.isArray(input)||!input.length||input.length>16)throw Error('Use a conversation of 1–16 messages.');
- const out=input.map(m=>{if(!m||!['user','assistant'].includes(m.role)||typeof m.content!=='string'||!m.content.trim()||m.content.length>650)throw Error('Each chat message must be 1–650 characters.');return {role:m.role,content:a.clean(m.content,650)};});
+ const out=input.map(m=>{const max=m?.role==='assistant'?4000:650;if(!m||!['user','assistant'].includes(m.role)||typeof m.content!=='string'||!m.content.trim()||m.content.length>max)throw Error('Customer messages must be 1–650 characters; assistant replies must be 1–4000 characters.');return {role:m.role,content:a.clean(m.content,max)};});
  if(out.at(-1).role!=='user'||out.reduce((n,m)=>n+m.content.length,0)>6000)throw Error('Start a new chat or send your enquiry to our team.');
  return out;
 }
