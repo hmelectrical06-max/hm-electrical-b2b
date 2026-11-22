@@ -1,7 +1,7 @@
 'use strict';
 const c=require('./core.cjs');
 let cache,expires=0,pending;
-const normal=s=>String(s||'').toLowerCase().replace(/ashirwad/g,'ashirvad').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9.]+/g,' ').trim();
+const normal=s=>require('./sales-catalogue.cjs').normal(s).replace(/(?<!\d)\.|\.(?!\d)/g,' ');
 const STOP=new Set('required needed supply quote quotation price prices rate rates mrp cost discount final kya hai ka ki ke mujhe chahiye batao please tell me what is the a an for of in do you have need want kitna material metre metres meter meters pcs nos piece pieces roll rolls coil coils box boxes kg litre litres mm cm inch inches mtr x'.split(' '));
 function sizes(s){
  const value=String(s).toLowerCase().replace(/[×]/g,'x').replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4');
@@ -12,6 +12,7 @@ function sizes(s){
  return [];
 }
 function select(query,rows){
+ for(const word of 'i we it this that also kindly could would like looking check confirm show listed current available availability quotation enquiry inquiry mumbai mumbra thane sion kausa borivali andheri malad goregaon bandra kurla mulund vashi navi mira bhayandar kalyan dombivli panvel per and to sqmm'.split(' '))STOP.add(word);
  const q=normal(query),terms=[...new Set(q.split(/\s+/).filter(w=>!STOP.has(w)))],brands=['ashirvad','supreme','ajay','braco','havells','polycab','anchor','legrand','schneider','finolex','lauritz'];
  const brand=brands.find(b=>q.split(' ').includes(b)),sku=terms.find(t=>/^700\d{5}$/.test(t));
  const words=terms.filter(w=>!brands.includes(w)&&!/^\d+(?:\.\d+)?$/.test(w));

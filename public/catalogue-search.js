@@ -45,6 +45,7 @@
   'Wires and Cables':'wire electrical cable power cable'
  };
  const normalize=value=>String(value??'').toLowerCase()
+  .replace(/\b(?:boash|boasch)\b/g,'bosch').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\b(?:fastner|fashtner)\b/g,'fastener').replace(/\b(?:elbew|elbo)\b/g,'elbow').replace(/\bengle\b/g,'angle').replace(/\b(?:ferul|ferrul)\b/g,'ferrule').replace(/\b(?:tep|tapeing)\b/g,'tape').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/ashirwad/g,'ashirvad')
   .replace(/\bsq\.?\s*mm\b|\bmm2\b|mm²/g,'sqmm')
   .replace(/\bamps?\b|\bamperes?\b/g,'a')
   .replace(/(\d)\s+(mm|sqmm|a|v|kw)\b/g,'$1$2')
@@ -61,11 +62,15 @@
   const aliases=synonymGroups.filter(group=>group.some(term=>base.includes(normalize(term)))).flat();
   return normalize([...fields,...aliases,categorySynonyms[product.category]||''].join(' '));
  }
+ const enquiryStop=new Set('i we need required requirement requirements want please kindly plz pls quote quotation enquiry inquiry price prices rate rates mrp cost show tell me what is are the a an for in near nearby at to and with my your our have available availability stock mumbai mumbra thane kausa sion borivali dahisar andheri malad goregaon bandra kurla mulund vashi navi mira bhayandar kalyan dombivli panvel bhiwandi ka ki ke hai kya chahiye chaiye mujhe do dena dikhao batao bhejo qty quantity'.split(' '));
+ const enquiryBrands=new Set('polycab finolex havells kei anchor braco ashirvad supreme ajay legrand schneider bosch dewalt ador makita esab fischer hilti'.split(' '));
+ function enquiryTerms(query){return normalize(query).replace(/(?<!\d)\.|\.(?!\d)/g,' ').replace(/\b\d+(?:\.\d+)?\s*(?:rolls?|coils?|boxes?|pcs|pieces?|nos|metres?|meters?|mtrs?)\b/g,' ').split(/\s+/).filter(t=>t&&!enquiryStop.has(t));}
  function matchesProduct(product,query){
-  const terms=normalize(query).split(/\s+/).filter(Boolean);
+  const terms=enquiryTerms(query);
   if(!terms.length)return true;
   const text=searchText(product);
-  return terms.every(term=>text.includes(term));
+  const make=normalize([product.brand,product.manufacturer].filter(Boolean).join(' '));
+  return terms.every(term=>text.includes(term)||enquiryBrands.has(term)&&(!make||/^(as per|to confirm|any make|brand open)/.test(make)));
  }
  function matches(text,query){
   const terms=normalize(query).split(/\s+/).filter(Boolean);
@@ -74,5 +79,5 @@
  }
  const slug=value=>String(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
  const productPath=product=>product._seoPath||`/products/${slug(`${product.id} ${product.name} ${product.size}`)}/`;
- return {normalize,searchText,matches,matchesProduct,slug,productPath};
+ return {normalize,searchText,matches,matchesProduct,slug,productPath,enquiryTerms};
 });

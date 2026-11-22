@@ -59,6 +59,7 @@ async function respond(messages){
  if(matches.some(p=>p.mrp!==null||p.sellingPrice!==null))return materialReply(matches.filter(p=>p.mrp!==null||p.sellingPrice!==null),messages);
  if(refs.length&&familyMatches.length)return materialReply(refs.map(catalogue.referenceView),messages);
  if(matches.length)return materialReply(matches,messages);
+ if(familyMatches.length){const result=materialReply(familyMatches,messages);result.reply=('Matching material specifications are listed below. Your requested make is subject to confirmation.\n'+result.reply.replace('Yes, this material is listed in our HM ELECTRICAL catalogue.\n','')).slice(0,650);return result;}
  if(/\b(fire fighting|firefighting|hvac|mechanical|plumbing|phe|electrical)\b/.test(last)&&!materialHint(last))return {step:'work',reply:'HM ELECTRICAL handles '+company.SERVICES+' What work do you need?',products:[],handoff:false};
  return {step:'not-found',reply:'This item is not currently listed in our catalogue. However, our team may be able to arrange it through our supplier network. Please call 8085560156 / 7905681022 for availability and pricing.',products:[],handoff:true};
 }

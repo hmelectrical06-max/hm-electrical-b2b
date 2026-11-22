@@ -1,5 +1,6 @@
 'use strict';
 const live=require('./live-catalogue.cjs');
+const referenceBook=require('./material-enquiry-book.json');
 const clean=(s,max=160)=>String(s??'').replace(/[\x00-\x1f<>]/g,' ').trim().slice(0,max);
 const number=v=>v!==null&&v!==''&&Number.isFinite(Number(v))&&Number(v)>=0?Number(v):null;
 const placeholder=s=>!s||/^(?:as per|brand open|any make|to confirm|on request|unknown|not specified)/i.test(s);
@@ -19,13 +20,16 @@ function publicView(p,m={}){
 }
 async function products(){
  if(cache&&Date.now()<expires)return cache;
- if(!pending)pending=(async()=>{const [rows,meta]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select='+META+'&order=product_id')]);const overlay=new Map(meta.map(r=>[r.product_id,r]));const result=rows.filter(p=>!forbidden(p)).map(p=>publicView(p,overlay.get(p.id)));cache=result;expires=Date.now()+120000;return result;})().finally(()=>{pending=null;});
+ if(!pending)pending=(async()=>{const [rows,meta]=await Promise.all([live.products(),live.all('catalogue_product_metadata?select='+META+'&order=product_id')]);const overlay=new Map(meta.map(r=>[r.product_id,r]));const result=rows.filter(p=>!forbidden(p)).map(p=>publicView(p,overlay.get(p.id)));const ids=new Set(rows.map(p=>p.id));for(const p of referenceBook)if(!ids.has(p.id)&&!forbidden(p))result.push(p);cache=result;expires=Date.now()+120000;return result;})().finally(()=>{pending=null;});
  return pending;
 }
 function normal(s){return clean(s,3000).toLowerCase().replace(/½/g,'1/2').replace(/¾/g,'3/4').replace(/¼/g,'1/4').replace(/(\d(?:\/\d)?)"/g,'$1 inch').replace(/[×*]/g,'x').replace(/\b(\d+)\s*c(?:ores?)?\s*[x×*]?\s*(?=\d)/g,'$1 core ').replace(/ashirwad/g,'ashirvad').replace(/standerd|standred/g,'standard').replace(/boasch|boash/g,'bosch').replace(/(?:sq\.?\s*mm|sqmm|mm2|mm²)/g,'sqmm').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\bchapsaw\b/g,'chop saw').replace(/\b(?:raducer|reducer)\b/g,'reducer').replace(/\b(?:fashtner|fastner)\b/g,'fastener').replace(/\b(?:wisher|wosher)\b/g,'washer').replace(/\b(?:safty|septi)\b/g,'safety').replace(/\b(?:bulb|lamp)\b/g,'light').replace(/\b(?:labor|mistri)\b/g,'labour').replace(/\bbreaker\b/g,'mcb').replace(/\b(?:coupling)\b/g,'coupler').replace(/(\d)([a-z])/g,'$1 $2').replace(/[^a-z0-9./-]+/g,' ').replace(/\s+/g,' ').trim();}
 const STOP=new Set('hi hello please need needed required requirement requirements want looking supply quote quotation price prices rate rates mrp cost discount final tell me what is are a an the for of in do you have your our my list listed printed catalogue catalog latest best wholesale retail bulk contractor project available availability stock not currently out unavailable ready can arrange delivery dispatch mumbai mumbra thane kausa borivali sion worli bhiwandi panvel material materials item items product products buy order send show give us mujhe chahiye hai ka ki ke batao kitna pcs pieces piece nos no metres metre meters meter mtr rolls roll coils coil box boxes kg litre litres qty quantity mm cm inch inches sqmm amp amps inch size x'.split(' '));
 const singular=t=>t.endsWith('ies')?t.slice(0,-3)+'y':t.endsWith('s')&&!t.endsWith('ss')?t.slice(0,-1):t;
-function words(s){return normal(s).split(' ').filter(t=>!STOP.has(t)).map(singular).filter(t=>t&&!STOP.has(t)&&!/^\d+(?:\.\d+)?(?:\/\d+)?$/.test(t));}
+for(const w of 'i we it this that also kindly could would like looking purchase buying check confirm confirmation quotation enquiry inquiry enquiries inquiries want showing shows starting thanks thank near nearby at to and with without per details detail about rate ratecard plz pls dena dikhao bata batana bhejo chaiye chahiye mil milega milega kya karo do please specification specifications specification'.split(' '))STOP.add(w);
+for(const w of 'andheri malad goregaon bandra kurla mulund vashi navi mira bhayandar kalyan dombivli dahisar chembur bhandup dadar grant road lohar chawl charni mahim kalwa diva available availability'.split(' '))STOP.add(w);
+const spellings={elbew:'elbow',elbo:'elbow',engle:'angle',ferul:'ferrule',ferrul:'ferrule',tep:'tape',paip:'pipe',dongching:'dongcheng'};
+function words(s){return normal(s).replace(/(?<!\d)\.|\.(?!\d)/g,' ').split(' ').filter(t=>!STOP.has(t)).map(singular).map(t=>spellings[t]||t).filter(t=>t&&!STOP.has(t)&&!/^\d+(?:\.\d+)?(?:\/\d+)?$/.test(t));}
 function specs(query){
  const q=normal(query),raw=String(query).toLowerCase().replace(/[×*]/g,'x');
  const dim=raw.match(/\b((?:\d+(?:\.\d+)?\s*x\s*)+\d+(?:\.\d+)?)\s*(mm|cm)?\b/);
