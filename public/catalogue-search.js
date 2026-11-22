@@ -45,6 +45,7 @@
   'Wires and Cables':'wire electrical cable power cable'
  };
  const normalize=value=>String(value??'').toLowerCase()
+  .replace(/\b(\d+(?:\.\d+)?)\s*c(?:ores?)?\s*(?:[/x×*]\s*)?(?=\d)/g,'$1core ').replace(/\bal\b/g,'aluminium').replace(/\bcu\b/g,'copper')
   .replace(/\b(?:boash|boasch)\b/g,'bosch').replace(/\b(?:grender|grainder)\b/g,'grinder').replace(/\b(?:fastner|fashtner)\b/g,'fastener').replace(/\b(?:elbew|elbo)\b/g,'elbow').replace(/\bengle\b/g,'angle').replace(/\b(?:ferul|ferrul)\b/g,'ferrule').replace(/\b(?:tep|tapeing)\b/g,'tape').replace(/\b(?:tar|taar)\b/g,'wire').replace(/\bpaip\b/g,'pipe').replace(/ashirwad/g,'ashirvad')
   .replace(/\bsq\.?\s*mm\b|\bmm2\b|mm²/g,'sqmm')
   .replace(/\bamps?\b|\bamperes?\b/g,'a')
