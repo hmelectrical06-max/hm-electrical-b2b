@@ -12,7 +12,7 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(fs.readFileSync(path.join(output,'robots.txt'),'utf8'),/Disallow: \//);
   assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex,nofollow/);
   const sitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...sitemap.matchAll(/<loc>/g)].length,3570);
   assert.equal([...sitemap.matchAll(/\/products\//g)].length,3541);
   assert.match(fs.readFileSync(path.join(output,'catalogue.html'),'utf8'),/name="description"/);
   assert.match(fs.readFileSync(path.join(output,'tools.html'),'utf8'),/name="description"/);
@@ -74,10 +74,19 @@ test('staging and production SEO modes preserve public routes and exclude privat
   assert.match(productionRobots,/Disallow: \/admin\//);
   assert.match(productionRobots,/Sitemap: https:\/\/hmelectricalb2b.com\/sitemap.xml/);
   const productionSitemap=fs.readFileSync(path.join(output,'sitemap.xml'),'utf8');
-  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3568);
+  assert.equal([...productionSitemap.matchAll(/<loc>/g)].length,3570);
   assert.equal([...productionSitemap.matchAll(/\/products\//g)].length,3541);
   assert.doesNotMatch(productionSitemap,/privacy\.html|asset-policy|\/admin\//);
   assert.ok(productionSitemap.includes('/company-profile.html'));
+  for(const name of ['company-projects.html','company-team.html']){
+   assert.ok(productionSitemap.includes('/'+name));
+   assert.match(fs.readFileSync(path.join(output,name),'utf8'),/name="robots" content="index,follow"/);
+  }
+  const catalogue=fs.readFileSync(path.join(output,'catalogue.html'),'utf8');
+  assert.match(catalogue,/3,541 materials \+ 119 services/);
+  assert.equal((catalogue.match(/<tr>/g)||[]).length,3541+119+1);
+  assert.doesNotMatch(catalogue,/CATALOGUE_ROWS|CATALOGUE_SUMMARY/);
+  assert.deepEqual(business.sameAs.sort(),[require('../public/company.json').youtubeChannelUrl,require('../public/company.json').linkedinUrl,require('../public/company.json').instagramUrl,require('../public/company.json').facebookUrl].sort());
   assert.match(fs.readFileSync(path.join(output,'company-profile.html'),'utf8'),/name="robots" content="index,follow"/);
   assert.match(fs.readFileSync(path.join(output,'index.html'),'utf8'),/Choose from 3,541 material specifications/);
   assert.doesNotMatch(fs.readFileSync(path.join(output,'index.html'),'utf8'),/noindex|PRIVATE REVIEW|hmelectricals\.com/);

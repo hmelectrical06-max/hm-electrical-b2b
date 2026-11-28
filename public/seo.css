@@ -2,3 +2,4 @@
 .product-figure{max-width:440px;margin:24px 0}.product-figure img{width:100%;height:auto}.product-figure figcaption{font-size:14px;color:#4f6174}
 
 main,footer{overflow-wrap:anywhere}nav{flex-wrap:wrap}
+table[data-complete-catalogue]{width:100%;border-collapse:collapse;font-size:14px;background:#fff}table[data-complete-catalogue] th,table[data-complete-catalogue] td{padding:12px;text-align:left;border:1px solid #d6dfe8;vertical-align:top}table[data-complete-catalogue] th{background:#17304b;color:#fff;white-space:nowrap}table[data-complete-catalogue] tr[hidden]{display:none}

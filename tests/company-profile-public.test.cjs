@@ -2,6 +2,18 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const approved=require('../docs/company-profile-public.json');
 const overview=require('../docs/company-overview-public.json');
+
+test('current project knowledge preserves each trade scope and excludes historical running records',()=>{
+ const knowledge=require('../scripts/build-chat-knowledge.cjs').build();
+ const running=knowledge.projects.filter(p=>p.status==='Running');
+ assert.equal(running.length,14);
+ assert.equal(running.filter(p=>p.name==='Sky City Hotel, Borivali').length,2);
+ assert.equal(running.filter(p=>p.name==='Damani Hospital, Borivali').length,3);
+ assert.equal(running.filter(p=>p.name==='Adani, Hyderabad').length,1);
+ assert.ok(!running.some(p=>p.name==='YOTA PANVEL'));
+ assert.ok(!knowledge.projects.some(p=>p.status==='Completed'&&p.name==='YOTA PANVEL'));
+ assert.equal(knowledge.sourceDate,'28 November 2026');
+});
 test('current public overview is reviewed and historical profile bytes remain preserved',()=>{
  const pdfs=[];
  const walk=dir=>{for(const e of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,e.name);if(e.isDirectory())walk(f);else if(/\.pdf$/i.test(e.name))pdfs.push(path.relative('public',f).replaceAll('\\','/'));}};

@@ -6,11 +6,13 @@ const localSearch=require('./local-search-content.cjs');
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const hasNoindex=html=>[...html.matchAll(/<meta\s+name=["']robots["'][^>]*>/gi)].some(([tag])=>/\bnoindex\b/i.test(tag));
-const publicEntryPages=new Set(['index.html','catalogue.html','company-profile.html']);
+const publicEntryPages=new Set(['index.html','catalogue.html','company-profile.html','company-projects.html','company-team.html']);
 const legacyDescriptions={
  'company-profile.html':'About HM ELECTRICAL: registered in Sion, operating from Khardi Road, Mumbra. Electrical and plumbing material supply and skilled technicians across Mumbai, Mumbra and Thane.',
  'catalogue.html':'Browse HM ELECTRICAL product specifications by category, product code, size and unit. Add materials to an enquiry and request a confirmed quotation.',
- 'tools.html':'Browse the HM ELECTRICAL tools catalogue and ask our Mumbai team to confirm exact makes, specifications, availability and quotation details.'
+ 'tools.html':'Browse the HM ELECTRICAL tools catalogue and ask our Mumbai team to confirm exact makes, specifications, availability and quotation details.',
+ 'company-projects.html':'Explore HM ELECTRICAL electrical, fire fighting, plumbing/PHE, HVAC and mechanical project work records and client references.',
+ 'company-team.html':'Meet HM ELECTRICAL leadership and site supervisors for electrical, fire fighting, plumbing and project execution support.'
 };
 const jsonLd=value=>JSON.stringify(value).replace(/</g,'\\u003c');
 module.exports=function generate(output){
@@ -20,12 +22,13 @@ module.exports=function generate(output){
  if(production&&process.env.CONTEXT&&process.env.CONTEXT!=='production')throw Error('Public SEO is forbidden in preview/branch contexts.');
  if(production&&process.env.HM_LAUNCH_APPROVED!=='true')throw Error('Public SEO requires HM_LAUNCH_APPROVED=true after testing.');
  const robots=production?'index,follow':'noindex,nofollow';
- const box={window:{}};vm.runInNewContext(fs.readFileSync('public/data.js','utf8'),box);const products=box.window.HM_DATA.materials;
+ const box={window:{}};vm.runInNewContext(fs.readFileSync('public/data.js','utf8'),box);const products=box.window.HM_DATA.materials,services=box.window.HM_DATA.services;
  const urls=[];
  for(const entry of fs.readdirSync(output,{withFileTypes:true})){
   if(!entry.isFile()||!entry.name.endsWith('.html'))continue;
   const file=path.join(output,entry.name),route=entry.name==='index.html'?'/':'/'+entry.name;
-  const sourceHtml=fs.readFileSync(file,'utf8');
+  let sourceHtml=fs.readFileSync(file,'utf8');
+  if(entry.name==='catalogue.html')sourceHtml=sourceHtml.replace('<!-- CATALOGUE_SUMMARY -->',`${products.length.toLocaleString('en-IN')} materials + ${services.length.toLocaleString('en-IN')} services. Only verified manufacturer MRP is displayed; otherwise MRP is on request.`).replace('<!-- CATALOGUE_ROWS -->',require('./complete-catalogue.cjs').rows([...products,...services]));
   const privatePage=!publicEntryPages.has(entry.name)&&hasNoindex(sourceHtml);
   const pageRobots=privatePage?'noindex,nofollow':robots;
   let html=sourceHtml.replace(/<meta\s+name="robots"[^>]*>/gi,'').replace(/<link[^>]*rel="canonical"[^>]*>/gi,'').replace(/https:\/\/(?:www\.)?hmelectricals\.com/g,domain);
@@ -44,7 +47,7 @@ module.exports=function generate(output){
    const title='HM ELECTRICAL B2B | Electrical & Plumbing Materials Mumbai';
    const description='HM ELECTRICAL B2B supplies electrical and plumbing materials, wires, cables, switches, MCBs, lights and tools. Request material quotes, electricians and plumbers in Mumbai, Mumbra and Thane.';
    html=html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${title}</title>`).replace(/<meta name="description"[^>]*>/i,`<meta name="description" content="${description}">`);
-   const entity={'@context':'https://schema.org','@graph':[{'@type':'LocalBusiness','@id':domain+'/#business',name:'HM ELECTRICAL',alternateName:['HM ELECTRICAL B2B','H M ELECTRICAL'],url:domain+'/',sameAs:[company.youtubeChannelUrl],description,telephone:company.phone,email:company.email,address:{'@type':'PostalAddress',...company.operatingPostalAddress},areaServed:['Mumbai','Mumbra, Thane','Thane']},{'@type':'WebSite','@id':domain+'/#website',url:domain+'/',name:'HM ELECTRICAL B2B',alternateName:['HM ELECTRICAL','H M ELECTRICAL','hmelectricalb2b'],inLanguage:'en-IN',publisher:{'@id':domain+'/#business'}}]};
+   const entity={'@context':'https://schema.org','@graph':[{'@type':'LocalBusiness','@id':domain+'/#business',name:'HM ELECTRICAL',alternateName:['HM ELECTRICAL B2B','H M ELECTRICAL'],url:domain+'/',sameAs:[company.youtubeChannelUrl,company.linkedinUrl,company.instagramUrl,company.facebookUrl].filter(Boolean),description,telephone:company.phone,email:company.email,address:{'@type':'PostalAddress',...company.operatingPostalAddress},areaServed:['Mumbai','Mumbra, Thane','Thane']},{'@type':'WebSite','@id':domain+'/#website',url:domain+'/',name:'HM ELECTRICAL B2B',alternateName:['HM ELECTRICAL','H M ELECTRICAL','hmelectricalb2b'],inLanguage:'en-IN',publisher:{'@id':domain+'/#business'}}]};
    html=html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'');
    html=html.replace('</head>',`<meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="${domain}/"><meta property="og:type" content="website"><meta property="og:image" content="${domain}/photos/company-profile-2026-cover.jpg"><script type="application/ld+json">${jsonLd(entity)}</script></head>`);
   }
